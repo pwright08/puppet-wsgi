@@ -5,11 +5,7 @@
 #
 class wsgi::params {
   case $::osfamily {
-    'Debian': {
-      $package_name = 'wsgi'
-      $service_name = 'wsgi'
-    }
-    'RedHat', 'Amazon': {
+    'RedHat': {
       $package_name = 'wsgi'
       $service_name = 'wsgi'
     }
