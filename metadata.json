@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "author": "landregistry",
   "summary": "Deploy WSGI-compatible Python applications",
-  "license": "MIT License",
+  "license": "MIT",
   "source": "https://github.com/LandRegistry-Ops/puppet-wsgi",
   "project_page": "https://github.com/LandRegistry-Ops/puppet-wsgi",
   "issues_url": "https://github.com/LandRegistry-Ops/puppet-wsgi/issues",
