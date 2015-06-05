@@ -1,21 +1,25 @@
 # == Class: wsgi
 #
-# Full description of class wsgi here.
+# Manages WSGI applications
 #
 # === Parameters
 #
 # [*sample_parameter*]
 #   Explanation of what this parameter affects and what it defaults to.
 #
-class wsgi (
-  $package_name = $::wsgi::params::package_name,
-  $service_name = $::wsgi::params::service_name,
-) inherits ::wsgi::params {
+class wsgi () inherits wsgi::params {
 
-  # validate parameters here
+  package { $::wsgi::params::python_pkg:
+    ensure   => present,
+    provider => rpm,
+    source   => $::wsgi::params::python_pkg_url
+  }
 
-  class { '::wsgi::install': } ->
-  class { '::wsgi::config': } ~>
-  class { '::wsgi::service': } ->
-  Class['::wsgi']
+  file { ['/opt/landregistry','/opt/landregistry/applications']:
+    ensure => directory,
+    owner  => 'root',
+    group  => 'root',
+    mode   => '0755'
+  }
+
 }

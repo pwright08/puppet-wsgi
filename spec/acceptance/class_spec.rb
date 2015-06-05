@@ -14,13 +14,9 @@ describe 'wsgi class' do
       apply_manifest(pp, :catch_changes  => true)
     end
 
-    describe package('wsgi') do
+    describe package('lr-python3') do
       it { is_expected.to be_installed }
     end
 
-    describe service('wsgi') do
-      it { is_expected.to be_enabled }
-      it { is_expected.to be_running }
-    end
   end
 end

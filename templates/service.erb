@@ -1,0 +1,19 @@
+# SystemD service script for <%= @name %>
+
+[Unit]
+Description=Land Registry's <%= @name %> WSGI application
+After=network.target
+
+[Service]
+Type=simple
+PIDFile=<%= @pid_file %>
+User=<%= @owner %>
+Group=<%= @group %>
+WorkingDirectory=<%= @code_dir %>
+ExecStart=<%= @start_sh %>
+ExecReload=/bin/kill -s HUP $MAINPID
+ExecStop=/bin/kill -s TERM $MAINPID
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

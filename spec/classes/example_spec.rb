@@ -13,26 +13,15 @@ describe 'wsgi' do
 
           it { is_expected.to compile.with_all_deps }
 
-          it { is_expected.to contain_class('wsgi::params') }
-          it { is_expected.to contain_class('wsgi::install').that_comes_before('wsgi::config') }
-          it { is_expected.to contain_class('wsgi::config') }
-          it { is_expected.to contain_class('wsgi::service').that_subscribes_to('wsgi::config') }
+          # it { is_expected.to contain_class('wsgi::params') }
+          # it { is_expected.to contain_class('wsgi::install').that_comes_before('wsgi::config') }
+          # it { is_expected.to contain_class('wsgi::config') }
+          # it { is_expected.to contain_class('wsgi::service').that_subscribes_to('wsgi::config') }
 
-          it { is_expected.to contain_service('wsgi') }
-          it { is_expected.to contain_package('wsgi').with_ensure('present') }
+          # it { is_expected.to contain_service('wsgi') }
+          # it { is_expected.to contain_package('wsgi').with_ensure('present') }
         end
       end
-    end
-  end
-
-  context 'unsupported operating system' do
-    describe 'wsgi class without any parameters on Solaris/Nexenta' do
-      let(:facts) {{
-        :osfamily        => 'Solaris',
-        :operatingsystem => 'Nexenta',
-      }}
-
-      it { expect { is_expected.to contain_package('wsgi') }.to raise_error(Puppet::Error, /Nexenta not supported/) }
     end
   end
 end

@@ -9,4 +9,8 @@
 # Learn more about module testing here:
 # http://docs.puppetlabs.com/guides/tests_smoke.html
 #
-include ::wsgi
+class { 'wsgi': } ->
+wsgi::application { 'test-app':
+  bind       => '5000',
+  wsgi_entry => 'application:app'
+}
