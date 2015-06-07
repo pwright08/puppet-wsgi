@@ -78,7 +78,6 @@ define wsgi::application (
       path    => "${code_dir}/requirements.txt",
       owner   => $owner,
       group   => $group,
-      mode    => '0664',
       require => File[$code_dir]
     }
 
@@ -171,6 +170,10 @@ define wsgi::application (
     service { $service:
       ensure => stopped,
       enable => false
+    }
+
+    file { $sysd_file:
+      ensure => absent
     }
 
 
