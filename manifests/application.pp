@@ -1,6 +1,6 @@
 
-# == Class wsgi::application
-# This class is called from wsgi to setup virtual environments.
+# == Type wsgi::application
+# This type is used to manage the installation.
 #
 define wsgi::application (
 
@@ -18,20 +18,23 @@ define wsgi::application (
 
 ) {
 
+  include stdlib
 
   # Static variables
   ##############################################################################
-  $venv_dir   = "${directory}/virtualenv"
-  $code_dir   = "${directory}/source"
-  $logs_dir   = "${directory}/logs"
-  $pid_file   = "${directory}/${service}.pid"
-  $cfg_file   = "${directory}/settings.conf"
-  $start_sh   = "${directory}/startup.sh"
-  $sysd_link  = "${directory}/${service}.service"
-  $sysd_file  = "${wsgi::params::systemd}/${service}.service"
-  $access_log = "${logs_dir}/access.log"
-  $error_log  = "${logs_dir}/error.log"
-  $log_level  = 'info'
+  $venv_dir     = "${directory}/virtualenv"
+  $code_dir     = "${directory}/source"
+  $logs_dir     = "${directory}/logs"
+  $pid_file     = "${directory}/${service}.pid"
+  $cfg_file     = "${directory}/settings.conf"
+  $start_sh     = "${directory}/startup.sh"
+  $sysd_link    = "${directory}/${service}.service"
+  $sysd_file    = "${wsgi::params::systemd}/${service}.service"
+  $commit_file  = "${directory}/COMMIT"
+  $version_file = "${directory}/VERSION"
+  $access_log   = "${logs_dir}/access.log"
+  $error_log    = "${logs_dir}/error.log"
+  $log_level    = 'info'
 
 
   # Install and configure application environment
@@ -75,6 +78,7 @@ define wsgi::application (
       require => File[$directory]
     }
 
+
     # Source code
     ############################################################################
     vcsrepo { $code_dir:
@@ -83,32 +87,46 @@ define wsgi::application (
       source   => $source,
       revision => $revision,
       require  => File[$directory],
-      notify   => [Exec['COMMIT'], Exec['VERSION']]
+      notify   => [Exec[$commit_file], Exec[$version_file]],
+      before   => File["${name} requirements.txt"]
     }
 
-    exec { 'COMMIT':
-      command => "git rev-parse --verify HEAD > ${directory}/COMMIT",
+    exec { $commit_file:
+      command => "git rev-parse --verify HEAD > ${commit_file}",
       user    => $owner,
       group   => $group,
       cwd     => $code_dir,
-      creates => "${directory}/COMMIT",
+      creates => $commit_file,
       path    => '/usr/local/bin:/usr/bin:/bin',
       require => Vcsrepo[$code_dir]
     }
 
-    exec { 'VERSION':
-      command => "echo git-`git rev-parse --abbrev-ref HEAD` > ${directory}/VERSION",
-      user    => $owner,
-      group   => $group,
-      cwd     => $code_dir,
-      creates => "${directory}/VERSION",
-      path    => '/usr/local/bin:/usr/bin:/bin',
-      require => Vcsrepo[$code_dir]
+    if $revision == undef {
+      exec { $version_file:
+        command => "echo 'latest' > ${version_file}",
+        user    => $owner,
+        group   => $group,
+        cwd     => $code_dir,
+        creates => $version_file,
+        path    => '/usr/local/bin:/usr/bin:/bin',
+        require => Vcsrepo[$code_dir]
+      }
+    } else {
+      exec { $version_file:
+        command => "echo ${revision} > ${version_file}",
+        user    => $owner,
+        group   => $group,
+        cwd     => $code_dir,
+        creates => $version_file,
+        path    => '/usr/local/bin:/usr/bin:/bin',
+        require => Vcsrepo[$code_dir]
+      }
     }
+
 
     # Virtual environment
     ############################################################################
-    file { 'requirements.txt':
+    file { "${name} requirements.txt":
       ensure  => file,
       path    => "${code_dir}/requirements.txt",
       owner   => $owner,
@@ -116,7 +134,7 @@ define wsgi::application (
       require => File[$code_dir]
     }
 
-    exec { 'create virtualenv':
+    exec { "${name} virtualenv":
       command => "pyvenv3 ${venv_dir}",
       user    => $owner,
       group   => $group,
@@ -124,23 +142,23 @@ define wsgi::application (
       path    => '/usr/local/bin:/usr/bin:/bin',
       unless  => "grep '^[\\t ]*VIRTUAL_ENV=[\\\\'\\\"]*${venv_dir}[\\\"\\\\'][\\t ]*$' ${venv_dir}/bin/activate",
       require => File[$venv_dir],
-      notify  => Exec['install dependencies']
+      notify  => Exec["${name} dependencies"]
     }
 
-    exec { 'install dependencies':
+    exec { "${name} dependencies":
       command     => "${venv_dir}/bin/pip install -r ${code_dir}/requirements.txt",
       user        => $owner,
       group       => $group,
-      require     => [Exec['create virtualenv'], File['requirements.txt']],
+      require     => [Exec["${name} virtualenv"], File["${name} requirements.txt"]],
       refreshonly => true
     }
 
-    exec { 'install gunicorn':
+    exec { "${name} gunicorn":
       command => "${venv_dir}/bin/pip install gunicorn",
       user    => $owner,
       group   => $group,
       creates => "${venv_dir}/bin/gunicorn",
-      require => Exec['install dependencies']
+      require => Exec["${name} dependencies"]
     }
 
 
@@ -172,7 +190,7 @@ define wsgi::application (
       group   => $group,
       mode    => '0664',
       content => template('wsgi/service.erb'),
-      require => [File[$start_sh], File[$logs_dir], Exec['install gunicorn']],
+      require => [File[$start_sh], File[$logs_dir], Exec["${name} gunicorn"]],
       notify  => Service[$service]
     }
 
