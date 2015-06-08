@@ -13,7 +13,6 @@ describe 'wsgi' do
 
           it { is_expected.to compile.with_all_deps }
           it { is_expected.to contain_class('wsgi::params') }
-          it { is_expected.to contain_class('wsgi::install') }
           it { is_expected.to contain_package('lr-python3').with_ensure('present') }
         end
       end
