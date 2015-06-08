@@ -82,7 +82,18 @@ define wsgi::application (
       provider => 'git',
       source   => $source,
       revision => $revision,
-      require  => File[$directory]
+      require  => File[$directory],
+      notify   => Exec['COMMIT']
+    }
+
+    exec { 'COMMIT':
+      command => "git rev-parse --verify HEAD > ${directory}/COMMIT",
+      user    => $owner,
+      group   => $group,
+      cwd     => $code_dir,
+      creates => "${directory}/COMMIT",
+      path    => '/usr/local/bin:/usr/bin:/bin',
+      require => Vcsrepo[$code_dir]
     }
 
     # Virtual environment
