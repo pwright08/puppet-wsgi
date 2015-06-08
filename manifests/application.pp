@@ -83,7 +83,7 @@ define wsgi::application (
       source   => $source,
       revision => $revision,
       require  => File[$directory],
-      notify   => Exec['COMMIT']
+      notify   => [Exec['COMMIT'], Exec['VERSION']]
     }
 
     exec { 'COMMIT':
@@ -92,6 +92,16 @@ define wsgi::application (
       group   => $group,
       cwd     => $code_dir,
       creates => "${directory}/COMMIT",
+      path    => '/usr/local/bin:/usr/bin:/bin',
+      require => Vcsrepo[$code_dir]
+    }
+
+    exec { 'VERSION':
+      command => "echo git-`git rev-parse --abbrev-ref HEAD` > ${directory}/VERSION",
+      user    => $owner,
+      group   => $group,
+      cwd     => $code_dir,
+      creates => "${directory}/VERSION",
       path    => '/usr/local/bin:/usr/bin:/bin',
       require => Vcsrepo[$code_dir]
     }
