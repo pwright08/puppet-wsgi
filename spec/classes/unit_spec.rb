@@ -12,8 +12,15 @@ describe 'wsgi' do
           let(:params) {{ }}
 
           it { is_expected.to compile.with_all_deps }
+          it { is_expected.to contain_class('wsgi') }
           it { is_expected.to contain_class('wsgi::params') }
           it { is_expected.to contain_package('lr-python3').with_ensure('present') }
+
+          directories = ['/opt/landregistry','/opt/landregistry/applications']
+          directories.each do |d|
+            it { is_expected.to contain_file(d).with_ensure('directory') }
+          end
+
         end
       end
     end
