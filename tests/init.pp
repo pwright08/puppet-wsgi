@@ -10,7 +10,8 @@
 # http://docs.puppetlabs.com/guides/tests_smoke.html
 #
 class { 'wsgi': } ->
-wsgi::application { 'test-app':
+wsgi::application { 'cases-frontend':
   bind       => '5000',
+  source     => 'https://github.com/LandRegistry/cases-frontend.git',
   wsgi_entry => 'application:app'
 }

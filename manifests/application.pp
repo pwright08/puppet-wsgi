@@ -13,6 +13,8 @@ define wsgi::application (
   $manage     = true,
   $bind       = undef,
   $vars       = undef,
+  $source     = undef,
+  $revision   = undef,
 
 ) {
 
@@ -42,6 +44,9 @@ define wsgi::application (
     if $bind == undef {
       fail( 'Bind value must be set to an integer representing a network port')
     }
+    if $source == undef {
+      fail( 'Source parameter must be provided')
+    }
 
 
     # Directory structure
@@ -70,6 +75,15 @@ define wsgi::application (
       require => File[$directory]
     }
 
+    # Source code
+    ############################################################################
+    vcsrepo { $code_dir:
+      ensure   => present,
+      provider => 'git',
+      source   => $source,
+      revision => $revision,
+      require  => File[$directory]
+    }
 
     # Virtual environment
     ############################################################################
