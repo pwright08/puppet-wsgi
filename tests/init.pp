@@ -13,5 +13,16 @@ class { 'wsgi': } ->
 wsgi::application { 'cases-frontend':
   bind       => '5000',
   source     => 'https://github.com/LandRegistry/cases-frontend.git',
-  wsgi_entry => 'application:app'
+  wsgi_entry => 'application:app',
+  vars       => {
+    db_url => 'http://ghj',
+  }
+} ->
+wsgi::application { 'cases-api':
+  bind       => '5001',
+  source     => 'https://github.com/LandRegistry/cases-api.git',
+  wsgi_entry => 'application:app',
+} ->
+wsgi::application { 'test-api':
+  ensure => absent
 }
