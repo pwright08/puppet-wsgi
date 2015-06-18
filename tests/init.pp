@@ -31,7 +31,7 @@ wsgi::application { 'digital-register-feeder':
   app_type   => 'python',
   vars       => {
     db_url => 'http://ghj',
-    'SETTINGS' => 'dev',
+    'SETTINGS' => 'test',
     'REGISTER_FILES_PATH' => 'data',
     'POSTGRES_USER' => 'postgres',
     'POSTGRES_PASSWORD' => 'password',

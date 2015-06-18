@@ -40,6 +40,6 @@ $GUNICORN --bind           0.0.0.0:${PORT} \
           <%= @wsgi_entry %> # Entry point
 
 <%- elsif @app_type == 'python' -%>
-python3 <%= @code_dir %>/run.py
+<%= @venv_dir %>/bin/python <%= @code_dir %>/run.py
 
 <% end %>
