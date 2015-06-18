@@ -7,6 +7,6 @@
 <%- if @vars -%>
 # Application-specific variables
   <%- @vars.sort.map do |key,value| -%>
-<%= key %>='<%= value %>'
+export <%= key %>='<%= value %>'
   <%- end -%>
 <%- end -%>

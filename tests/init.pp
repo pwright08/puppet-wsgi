@@ -25,4 +25,27 @@ wsgi::application { 'cases-api':
 } ->
 wsgi::application { 'test-api':
   ensure => absent
+} ->
+wsgi::application { 'digital-register-feeder':
+  source     => 'https://github.com/LandRegistry/digital-register-feeder.git',
+  app_type   => 'python',
+  vars       => {
+    db_url => 'http://ghj',
+    'SETTINGS' => 'dev',
+    'REGISTER_FILES_PATH' => 'data',
+    'POSTGRES_USER' => 'postgres',
+    'POSTGRES_PASSWORD' => 'password',
+    'POSTGRES_HOST' => '127.0.0.1',
+    'POSTGRES_PORT' => '5432',
+    'POSTGRES_DB' => 'register_data',
+    'DIGITAL_REGISTER_URL' => 'http://landregistry.local:8003',
+    'ELASTICSEARCH_HOST' => 'localhost',
+    'ELASTICSEARCH_PORT' => '9200',
+    'INCOMING_QUEUE' => 'publish_queue',
+    'INCOMING_QUEUE_HOSTNAME' => 'localhost',
+    'LOGGING_CONFIG_FILE_PATH' => 'logging_config.json',
+    'FAULT_LOG_FILE_PATH' => '/var/log/digital-register-feeder-fault.log',
+    'SHOW_PRIVATE_PROPRIETORS' => 'true',
+    'LOG_SCHEMA_VALIDATION_ERRORS' => 'false',
+  }
 }

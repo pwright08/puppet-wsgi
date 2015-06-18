@@ -1,7 +1,7 @@
 # SystemD service script for <%= @name %>
 
 [Unit]
-Description=Land Registry's <%= @name %> WSGI application
+Description=Land Registry's <%= @name %> <%= @app_type %> application
 After=network.target
 
 [Service]
