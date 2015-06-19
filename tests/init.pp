@@ -27,7 +27,7 @@ wsgi::application { 'test-api':
   ensure => absent
 } ->
 wsgi::application { 'digital-register-feeder':
-  source     => 'https://github.com/LandRegistry/digital-register-feeder.git',
+  source     => 'git@github.com:LandRegistry/digital-register-feeder.git',
   app_type   => 'python',
   vars       => {
     db_url => 'http://ghj',
