@@ -26,6 +26,7 @@ if [ -f '<%= @code_dir %>/manage.py' ]; then
 fi
 <%- end -%>
 
+<%- if @app_type == 'wsgi' -%>
 # Run time
 echo "Starting web service on ${PORT}..."
 GUNICORN='<%= @venv_dir %>/bin/gunicorn'
@@ -37,3 +38,8 @@ $GUNICORN --bind           0.0.0.0:${PORT} \
           --error-logfile  '<%= @error_log %>' \
           --log-level      <%= @log_level %> \
           <%= @wsgi_entry %> # Entry point
+
+<%- elsif @app_type == 'python' -%>
+<%= @venv_dir %>/bin/python <%= @code_dir %>/run.py
+
+<% end %>

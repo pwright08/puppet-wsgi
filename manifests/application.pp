@@ -15,7 +15,7 @@ define wsgi::application (
   $vars       = undef,
   $source     = undef,
   $revision   = undef,
-
+  $app_type   = 'wsgi'
 ) {
 
   include stdlib
@@ -44,7 +44,11 @@ define wsgi::application (
 
     # Input validation
     ############################################################################
-    if $bind == undef {
+    if $app_type in ['wsgi', 'python'] == false {
+      fail( 'Not a valid app type')
+    }
+
+    if $app_type == 'wsgi' and $bind == undef {
       fail( 'Bind value must be set to an integer representing a network port')
     }
     if $source == undef {
