@@ -150,11 +150,11 @@ define wsgi::application (
     }
 
     exec { "${name} dependencies":
-      command     => "${venv_dir}/bin/pip install -r ${code_dir}/requirements.txt",
-      user        => $owner,
-      group       => $group,
-      require     => [Exec["${name} virtualenv"], File["${name} requirements.txt"]],
-      refreshonly => true
+      command => "${venv_dir}/bin/pip install -r ${code_dir}/requirements.txt",
+      user    => $owner,
+      group   => $group,
+      require => [Exec["${name} virtualenv"], File["${name} requirements.txt"]],
+      #refreshonly => true
     }
 
     exec { "${name} gunicorn":
