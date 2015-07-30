@@ -199,9 +199,10 @@ define wsgi::application (
     }
 
     file { $sysd_link:
-      ensure  => link,
-      target  => $sysd_file,
-      require => File[$sysd_file]
+      ensure    => link,
+      target    => $sysd_file,
+      require   => File[$sysd_file],
+      subscribe => Vcsrepo[$code_dir]
     }
 
     service { $service:
