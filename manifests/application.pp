@@ -5,8 +5,8 @@
 define wsgi::application (
 
   $ensure     = 'present',
-  $owner      = 'root',
-  $group      = 'root',
+  $owner      = $wsgi::params::user,
+  $group      = $wsgi::params::group,
   $wsgi_entry = $wsgi::params::wsgi_entry,
   $directory  = "${wsgi::params::app_dir}/${name}",
   $service    = "lr-${name}",
