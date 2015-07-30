@@ -8,13 +8,13 @@ define wsgi::application (
   $owner      = $wsgi::params::user,
   $group      = $wsgi::params::group,
   $wsgi_entry = $wsgi::params::wsgi_entry,
+  $revision   = $wsgi::params::git_revision,
   $directory  = "${wsgi::params::app_dir}/${name}",
   $service    = "lr-${name}",
   $manage     = true,
   $bind       = undef,
   $vars       = undef,
   $source     = undef,
-  $revision   = undef,
   $app_type   = 'wsgi'
 ) {
 
