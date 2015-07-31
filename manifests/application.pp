@@ -5,16 +5,16 @@
 define wsgi::application (
 
   $ensure     = 'present',
-  $owner      = 'root',
-  $group      = 'root',
+  $owner      = $wsgi::params::user,
+  $group      = $wsgi::params::group,
   $wsgi_entry = $wsgi::params::wsgi_entry,
+  $revision   = $wsgi::params::git_revision,
   $directory  = "${wsgi::params::app_dir}/${name}",
   $service    = "lr-${name}",
   $manage     = true,
   $bind       = undef,
   $vars       = undef,
   $source     = undef,
-  $revision   = undef,
   $app_type   = 'wsgi'
 ) {
 
@@ -150,10 +150,11 @@ define wsgi::application (
     }
 
     exec { "${name} dependencies":
-      command => "${venv_dir}/bin/pip install -r ${code_dir}/requirements.txt",
-      user    => $owner,
-      group   => $group,
-      require => [Exec["${name} virtualenv"], File["${name} requirements.txt"]],
+      command   => "${venv_dir}/bin/pip install -r ${code_dir}/requirements.txt",
+      user      => $owner,
+      group     => $group,
+      require   => [Exec["${name} virtualenv"], File["${name} requirements.txt"]],
+      subscribe => Vcsrepo[$code_dir]
       #refreshonly => true
     }
 
@@ -199,9 +200,10 @@ define wsgi::application (
     }
 
     file { $sysd_link:
-      ensure  => link,
-      target  => $sysd_file,
-      require => File[$sysd_file]
+      ensure    => link,
+      target    => $sysd_file,
+      require   => File[$sysd_file],
+      subscribe => Vcsrepo[$code_dir]
     }
 
     service { $service:

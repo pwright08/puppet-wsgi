@@ -5,8 +5,13 @@
 #
 class wsgi::params {
 
+  $user       = 'root'
+  $group      = 'root'
   $wsgi_entry = 'application.routes:app'
   $app_dir    = '/opt/landregistry/applications'
+
+  # Default git branch to pull from
+  $git_revision   = 'master'
 
 
   case $::osfamily {
