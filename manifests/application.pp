@@ -86,13 +86,14 @@ define wsgi::application (
     # Source code
     ############################################################################
     vcsrepo { $code_dir:
-      ensure   => present,
-      provider => 'git',
-      source   => $source,
-      revision => $revision,
-      require  => File[$directory],
-      notify   => [Exec[$commit_file], Exec[$version_file]],
-      before   => File["${name} requirements.txt"]
+      ensure     => present,
+      provider   => 'git',
+      source     => $source,
+      revision   => $revision,
+      submodules => true,
+      require    => File[$directory],
+      notify     => [Exec[$commit_file], Exec[$version_file]],
+      before     => File["${name} requirements.txt"]
     }
 
     exec { $commit_file:
