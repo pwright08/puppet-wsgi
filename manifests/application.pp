@@ -86,7 +86,7 @@ define wsgi::application (
     # Source code
     ############################################################################
     vcsrepo { $code_dir:
-      ensure     => present,
+      ensure     => latest,
       provider   => 'git',
       source     => $source,
       revision   => $revision,
@@ -97,34 +97,34 @@ define wsgi::application (
     }
 
     exec { $commit_file:
-      command => "git rev-parse --verify HEAD > ${commit_file}",
-      user    => $owner,
-      group   => $group,
-      cwd     => $code_dir,
-      creates => $commit_file,
-      path    => '/usr/local/bin:/usr/bin:/bin',
-      require => Vcsrepo[$code_dir]
+      command     => "git rev-parse --verify HEAD > ${commit_file}",
+      user        => $owner,
+      group       => $group,
+      cwd         => $code_dir,
+      refreshonly => true,
+      path        => '/usr/local/bin:/usr/bin:/bin',
+      require     => Vcsrepo[$code_dir]
     }
 
     if $revision == undef {
       exec { $version_file:
-        command => "echo 'latest' > ${version_file}",
-        user    => $owner,
-        group   => $group,
-        cwd     => $code_dir,
-        creates => $version_file,
-        path    => '/usr/local/bin:/usr/bin:/bin',
-        require => Vcsrepo[$code_dir]
+        command     => "echo 'latest' > ${version_file}",
+        user        => $owner,
+        group       => $group,
+        cwd         => $code_dir,
+        refreshonly => true,
+        path        => '/usr/local/bin:/usr/bin:/bin',
+        require     => Vcsrepo[$code_dir]
       }
     } else {
       exec { $version_file:
-        command => "echo ${revision} > ${version_file}",
-        user    => $owner,
-        group   => $group,
-        cwd     => $code_dir,
-        creates => $version_file,
-        path    => '/usr/local/bin:/usr/bin:/bin',
-        require => Vcsrepo[$code_dir]
+        command     => "echo ${revision} > ${version_file}",
+        user        => $owner,
+        group       => $group,
+        cwd         => $code_dir,
+        refreshonly => true,
+        path        => '/usr/local/bin:/usr/bin:/bin',
+        require     => Vcsrepo[$code_dir]
       }
     }
 
