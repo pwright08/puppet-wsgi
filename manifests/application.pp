@@ -103,7 +103,8 @@ define wsgi::application (
       cwd         => $code_dir,
       refreshonly => true,
       path        => '/usr/local/bin:/usr/bin:/bin',
-      require     => Vcsrepo[$code_dir]
+      require     => Vcsrepo[$code_dir],
+      notify      => Service[$service]
     }
 
     if $revision == undef {
@@ -155,9 +156,7 @@ define wsgi::application (
       user      => $owner,
       group     => $group,
       require   => [Exec["${name} virtualenv"], File["${name} requirements.txt"]],
-      subscribe => Vcsrepo[$code_dir],
-      notify    => Service[$service]
-
+      subscribe => Vcsrepo[$code_dir]
       #refreshonly => true
     }
 
