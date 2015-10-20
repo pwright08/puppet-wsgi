@@ -155,7 +155,9 @@ define wsgi::application (
       user      => $owner,
       group     => $group,
       require   => [Exec["${name} virtualenv"], File["${name} requirements.txt"]],
-      subscribe => Vcsrepo[$code_dir]
+      subscribe => Vcsrepo[$code_dir],
+      notify    => Service[$service]
+
       #refreshonly => true
     }
 
