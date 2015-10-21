@@ -103,7 +103,8 @@ define wsgi::application (
       cwd         => $code_dir,
       refreshonly => true,
       path        => '/usr/local/bin:/usr/bin:/bin',
-      require     => Vcsrepo[$code_dir]
+      require     => Vcsrepo[$code_dir],
+      notify      => Service[$service]
     }
 
     if $revision == undef {
