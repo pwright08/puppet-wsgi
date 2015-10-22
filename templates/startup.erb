@@ -37,7 +37,7 @@ $GUNICORN --bind           0.0.0.0:${PORT} \
           --access-logfile '<%= @access_log %>' \
           --error-logfile  '<%= @error_log %>' \
           --log-level      <%= @log_level %> \
-          <%= @wsgi_entry %> # Entry point
+          "<%= @wsgi_entry %>" # Entry point
 
 <%- elsif @app_type == 'python' -%>
 <%= @venv_dir %>/bin/python <%= @code_dir %>/run.py
