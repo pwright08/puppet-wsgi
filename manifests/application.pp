@@ -15,7 +15,9 @@ define wsgi::application (
   $bind       = undef,
   $vars       = undef,
   $source     = undef,
-  $app_type   = 'wsgi'
+  $app_type   = 'wsgi',
+  $vc_server  = undef,
+  $environment = undef
 ) {
 
   include stdlib
@@ -36,6 +38,14 @@ define wsgi::application (
   $error_log    = "${logs_dir}/error.log"
   $log_level    = 'info'
 
+  if $vc_server != undef and $environment != undef  {
+    $vc_json = parsejson(inline_template("<%= Net::HTTP.get(URI('http://$vc_server/api/$environment/$name')) %>"))
+    $git_revision = $vc_json['version']
+    $app_vars = $vc_json['variables']
+  } else {
+    $git_revision = $revision
+    $app_vars = $vars
+  }
 
   # Install and configure application environment
   ##############################################################################
@@ -89,7 +99,7 @@ define wsgi::application (
       ensure     => latest,
       provider   => 'git',
       source     => $source,
-      revision   => $revision,
+      revision   => $git_revision,
       submodules => true,
       require    => File[$directory],
       notify     => [Exec[$commit_file], Exec[$version_file]],
@@ -107,7 +117,7 @@ define wsgi::application (
       notify      => Service[$service]
     }
 
-    if $revision == undef {
+    if $git_revision == undef {
       exec { $version_file:
         command     => "echo 'latest' > ${version_file}",
         user        => $owner,
