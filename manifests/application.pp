@@ -4,20 +4,21 @@
 #
 define wsgi::application (
 
-  $ensure     = 'present',
-  $owner      = $wsgi::params::user,
-  $group      = $wsgi::params::group,
-  $wsgi_entry = $wsgi::params::wsgi_entry,
-  $revision   = $wsgi::params::git_revision,
-  $directory  = "${wsgi::params::app_dir}/${name}",
-  $service    = "lr-${name}",
-  $manage     = true,
-  $bind       = undef,
-  $vars       = undef,
-  $source     = undef,
-  $app_type   = 'wsgi',
-  $vc_server  = undef,
-  $environment = undef
+  $ensure      = 'present',
+  $owner       = $wsgi::params::user,
+  $group       = $wsgi::params::group,
+  $wsgi_entry  = $wsgi::params::wsgi_entry,
+  $revision    = $wsgi::params::git_revision,
+  $directory   = "${wsgi::params::app_dir}/${name}",
+  $service     = "lr-${name}",
+  $manage      = true,
+  $bind        = undef,
+  $vars        = undef,
+  $source      = undef,
+  $app_type    = 'wsgi',
+  $vc_server   = undef,
+  $environment = undef,
+  $vc_app_host = undef
 ) {
 
   include stdlib
@@ -38,10 +39,16 @@ define wsgi::application (
   $error_log    = "${logs_dir}/error.log"
   $log_level    = 'info'
 
-  if $vc_server != undef and $environment != undef  {
-    $vc_json = parsejson(inline_template("<%= Net::HTTP.get(URI('http://$vc_server/api/$environment/$name')) %>"))
-    $git_revision = $vc_json['version']
-    $app_vars = $vc_json['variables']
+  if $vc_server != undef and $environment != undef and $vc_app_host != undef {
+    $vc_json = inline_template("<%= Net::HTTP.get(URI('$vc_app_host/api/$environment/$name')) %>")
+    $vc_json_parsed = parsejson($vc_json, true)
+
+    if $vc_json_parsed['version'] {
+      $git_revision = $vc_json_parsed['version']
+      $app_vars = $vc_json_parsed['variables']
+    } else {
+      fail("Failed to Look up Application $name and environment $environment")
+    }
   } else {
     $git_revision = $revision
     $app_vars = $vars
