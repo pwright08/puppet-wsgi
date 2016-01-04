@@ -3,6 +3,7 @@
 #
 
 require "net/http"
+require "net/https"
 require "uri"
 
 require 'puppet/external/pson/common'
@@ -26,12 +27,18 @@ be returned if the parsing of YAML string have failed.
     begin
 
       http = Net::HTTP.new(uri.host, uri.port)
+
+      if uri.scheme == 'https' then
+        http.use_ssl = true
+        http.verify_mode = OpenSSL::SSL::VERIFY_NONE
+      end
+
       request = Net::HTTP::Get.new(uri.request_uri)
       request.basic_auth(arguments[1], "")
       response = http.request(request).body
 
     rescue Exception => e
-        raise('App Version Conntrol Error: Failed to connect to ' + arguments[0])
+        raise('App Version Control Error: Failed to connect to ' + arguments[0])
     end
 
 
@@ -39,7 +46,7 @@ be returned if the parsing of YAML string have failed.
     begin
       JSON.parse(response)
     rescue Exception => e
-        raise('App Versiob Conntrol Error: Failed to parse json response from ' + arguments[0])
+        raise('App Version Control Error: Failed to parse json response from ' + arguments[0])
     end
 
   end
