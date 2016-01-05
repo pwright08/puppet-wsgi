@@ -4,9 +4,9 @@
 [ -f '<%= @directory %>/VERSION' ] && export VERSION=$(cat <%= @directory %>/VERSION)
 [ -f '<%= @directory %>/COMMIT' ]  && export COMMIT=$(cat <%= @directory %>/COMMIT)
 
-<%- if @vars -%>
+<%- if @app_vars -%>
 # Application-specific variables
-  <%- @vars.sort.map do |key,value| -%>
+  <%- @app_vars.sort.map do |key,value| -%>
 export <%= key %>='<%= value %>'
   <%- end -%>
 <%- end -%>

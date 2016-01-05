@@ -4,18 +4,22 @@
 #
 define wsgi::application (
 
-  $ensure     = 'present',
-  $owner      = $wsgi::params::user,
-  $group      = $wsgi::params::group,
-  $wsgi_entry = $wsgi::params::wsgi_entry,
-  $revision   = $wsgi::params::git_revision,
-  $directory  = "${wsgi::params::app_dir}/${name}",
-  $service    = "lr-${name}",
-  $manage     = true,
-  $bind       = undef,
-  $vars       = undef,
-  $source     = undef,
-  $app_type   = 'wsgi'
+  $ensure       = 'present',
+  $owner        = $wsgi::params::user,
+  $group        = $wsgi::params::group,
+  $wsgi_entry   = $wsgi::params::wsgi_entry,
+  $revision     = $wsgi::params::git_revision,
+  $directory    = "${wsgi::params::app_dir}/${name}",
+  $service      = "lr-${name}",
+  $manage       = true,
+  $bind         = undef,
+  $vars         = undef,
+  $source       = undef,
+  $app_type     = 'wsgi',
+  $vc_server    = undef,
+  $environment  = undef,
+  $vc_app_host  = undef,
+  $vc_app_token = undef
 ) {
 
   include stdlib
@@ -36,6 +40,17 @@ define wsgi::application (
   $error_log    = "${logs_dir}/error.log"
   $log_level    = 'info'
 
+  if $vc_server != undef and $environment != undef and $vc_app_host != undef {
+
+    $vc_json = getvars("$vc_app_host/api/$environment/$name", $vc_app_token)
+
+    $git_revision = $vc_json['version']
+    $app_vars = $vc_json['variables']
+
+  } else {
+    $git_revision = $revision
+    $app_vars = $vars
+  }
 
   # Install and configure application environment
   ##############################################################################
@@ -89,7 +104,7 @@ define wsgi::application (
       ensure     => latest,
       provider   => 'git',
       source     => $source,
-      revision   => $revision,
+      revision   => $git_revision,
       submodules => true,
       require    => File[$directory],
       notify     => [Exec[$commit_file], Exec[$version_file]],
@@ -107,7 +122,7 @@ define wsgi::application (
       notify      => Service[$service]
     }
 
-    if $revision == undef {
+    if $git_revision == undef {
       exec { $version_file:
         command     => "echo 'latest' > ${version_file}",
         user        => $owner,
