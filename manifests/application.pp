@@ -16,10 +16,10 @@ define wsgi::application (
   $vars         = undef,
   $source       = undef,
   $app_type     = 'wsgi',
-  $vc_server    = undef,
+  $vs_server    = undef,
   $environment  = undef,
-  $vc_app_host  = undef,
-  $vc_app_token = undef
+  $vs_app_host  = undef,
+  $vs_app_token = undef
 ) {
 
   include stdlib
@@ -40,12 +40,12 @@ define wsgi::application (
   $error_log    = "${logs_dir}/error.log"
   $log_level    = 'info'
 
-  if $vc_server != undef and $environment != undef and $vc_app_host != undef {
+  if $vs_server != undef and $environment != undef and $vs_app_host != undef {
 
-    $vc_json = getvars("$vc_app_host/api/$environment/$name", $vc_app_token)
+    $vs_json = getvars("$vs_app_host/api/$environment/$name", $vs_app_token)
 
-    $git_revision = $vc_json['version']
-    $app_vars = $vc_json['variables']
+    $git_revision = $vs_json['version']
+    $app_vars = $vs_json['variables']
 
   } else {
     $git_revision = $revision
