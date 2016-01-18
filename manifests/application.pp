@@ -46,10 +46,14 @@ define wsgi::application (
 
     $git_revision = $vs_json['version']
     $app_vars = $vs_json['variables']
-
+    $repo_address = $vs_json['repository']
+    $local_config = False
+    
   } else {
     $git_revision = $revision
     $app_vars = $vars
+    $repo_address = $source
+    $local_config = True
   }
 
   # Install and configure application environment
@@ -66,8 +70,8 @@ define wsgi::application (
     if $app_type == 'wsgi' and $bind == undef {
       fail( 'Bind value must be set to an integer representing a network port')
     }
-    if $source == undef {
-      fail( 'Source parameter must be provided')
+    if $repo_address == undef {
+      fail( 'Source/repo_address parameter must be provided')
     }
 
 
@@ -103,7 +107,7 @@ define wsgi::application (
     vcsrepo { $code_dir:
       ensure     => latest,
       provider   => 'git',
-      source     => $source,
+      source     => $repo_address,
       revision   => $git_revision,
       submodules => true,
       require    => File[$directory],
