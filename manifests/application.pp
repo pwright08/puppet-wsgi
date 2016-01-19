@@ -16,10 +16,10 @@ define wsgi::application (
   $vars         = undef,
   $source       = undef,
   $app_type     = 'wsgi',
-  $vc_server    = undef,
+  $vs_server    = undef,
   $environment  = undef,
-  $vc_app_host  = undef,
-  $vc_app_token = undef
+  $vs_app_host  = undef,
+  $vs_app_token = undef
 ) {
 
   include stdlib
@@ -40,16 +40,20 @@ define wsgi::application (
   $error_log    = "${logs_dir}/error.log"
   $log_level    = 'info'
 
-  if $vc_server != undef and $environment != undef and $vc_app_host != undef {
+  if $vs_server != undef and $environment != undef and $vs_app_host != undef {
 
-    $vc_json = getvars("$vc_app_host/api/$environment/$name", $vc_app_token)
+    $vs_json = getvars("$vs_app_host/api/$environment/$name", $vs_app_token)
 
-    $git_revision = $vc_json['version']
-    $app_vars = $vc_json['variables']
-
+    $git_revision = $vs_json['version']
+    $app_vars = $vs_json['variables']
+    $repo_address = $vs_json['repository']
+    $local_config = False
+    
   } else {
     $git_revision = $revision
     $app_vars = $vars
+    $repo_address = $source
+    $local_config = True
   }
 
   # Install and configure application environment
@@ -66,8 +70,8 @@ define wsgi::application (
     if $app_type == 'wsgi' and $bind == undef {
       fail( 'Bind value must be set to an integer representing a network port')
     }
-    if $source == undef {
-      fail( 'Source parameter must be provided')
+    if $repo_address == undef {
+      fail( 'Source/repo_address parameter must be provided')
     }
 
 
@@ -103,7 +107,7 @@ define wsgi::application (
     vcsrepo { $code_dir:
       ensure     => latest,
       provider   => 'git',
-      source     => $source,
+      source     => $repo_address,
       revision   => $git_revision,
       submodules => true,
       require    => File[$directory],

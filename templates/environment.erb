@@ -6,6 +6,7 @@
 
 <%- if @app_vars -%>
 # Application-specific variables
+# Local config: <%= @local_config %>
   <%- @app_vars.sort.map do |key,value| -%>
 export <%= key %>='<%= value %>'
   <%- end -%>
