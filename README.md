@@ -25,13 +25,13 @@ Currently supported apps:
 
 ## Module Description
 
-LandRegistry-application provides a new Puppet type, `application::app`, which handles the installation and configuration of Python WSGI applications using Gunicorn and Java Jars running in SystemD.
+LandRegistry-application provides a new Puppet type, `wsgi::application`, which handles the installation and configuration of Python WSGI applications using Gunicorn and Java Jars running in SystemD.
 
 
 ## Setup
 
 
-### Beginning with application
+### Beginning with wsgi
 
 Simply providing a git repository to pull your application's source code from, as well as a network port to bind to is enough to get started.
 
@@ -127,7 +127,7 @@ Testing using vagrant:
 ```
 vagrant up
 vagrant ssh
-sudo puppet apply /etc/puppet/modules/application/tests/init.pp
+sudo puppet apply /etc/puppet/modules/wsgi/tests/init.pp
 ```
 
 ## Release Notes
