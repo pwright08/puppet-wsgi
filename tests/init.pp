@@ -9,42 +9,25 @@
 # Learn more about module testing here:
 # http://docs.puppetlabs.com/guides/tests_smoke.html
 #
-class { 'wsgi': } ->
-wsgi::application { 'cases-frontend':
-  bind       => '5000',
-  source     => 'https://github.com/LandRegistry/cases-frontend.git',
-  wsgi_entry => 'application:app',
-  vars       => {
-    db_url => 'http://ghj',
+include wsgi
+wsgi::application { 'test-app' :
+  bind          => '5000',
+  wsgi_entry    => 'application.server:app',
+  source        => 'https://github.com/mooreandrew/test-app.git',
+  environment   => 'Integration',
+  app_type      => 'wsgi',
+  vars          => {
+    'TESTVALUE' => 'test',
+    'SETTINGS'  => 'config.DevelopmentConfig'
   }
 } ->
-wsgi::application { 'cases-api':
-  bind       => '5001',
-  source     => 'https://github.com/LandRegistry/cases-api.git',
-  wsgi_entry => 'application:app',
-} ->
-wsgi::application { 'test-api':
-  ensure => absent
-} ->
-wsgi::application { 'digital-register-feeder':
-  source     => 'git@github.com:LandRegistry/digital-register-feeder.git',
-  app_type   => 'python',
-  vars       => {
-    'SETTINGS'                     => 'test',
-    'REGISTER_FILES_PATH'          => 'data',
-    'POSTGRES_USER'                => 'postgres',
-    'POSTGRES_PASSWORD'            => 'password',
-    'POSTGRES_HOST'                => '127.0.0.1',
-    'POSTGRES_PORT'                => '5432',
-    'POSTGRES_DB'                  => 'register_data',
-    'DIGITAL_REGISTER_URL'         => 'http://landregistry.local:8003',
-    'ELASTICSEARCH_HOST'           => 'localhost',
-    'ELASTICSEARCH_PORT'           => '9200',
-    'INCOMING_QUEUE'               => 'publish_queue',
-    'INCOMING_QUEUE_HOSTNAME'      => 'localhost',
-    'LOGGING_CONFIG_FILE_PATH'     => 'logging_config.json',
-    'FAULT_LOG_FILE_PATH'          => '/var/log/digital-register-feeder-fault.log',
-    'SHOW_PRIVATE_PROPRIETORS'     => 'true',
-    'LOG_SCHEMA_VALIDATION_ERRORS' => 'false',
+wsgi::application { 'spark-app' :
+  bind          => '5001',
+  source        => 'https://github.com/mooreandrew/gradle-test-jar.git',
+  environment   => 'Integration',
+  app_type      => 'jar',
+  jar_name      => 'gradle_test-1.0.jar',
+  vars          => {
+    'TESTVALUE' => 'test',
   }
 }
