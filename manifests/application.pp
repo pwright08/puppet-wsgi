@@ -15,7 +15,7 @@ define wsgi::application (
   $vars         = undef,
   $source       = undef,
   $jar_name     = undef,
-  $app_type     = undef,
+  $app_type     = 'wsgi',
   $vs_server    = undef,
   $environment  = undef,
   $vs_app_host  = undef,
