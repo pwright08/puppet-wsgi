@@ -168,6 +168,19 @@ define wsgi::application (
         bind     => $bind
       }
 
+    } elsif ($app_type == 'python') {
+
+      wsgi::types::python { $name:
+        code_dir => $code_dir,
+        venv_dir => $venv_dir,
+        owner    => $owner,
+        group    => $group,
+        service  => $service,
+        cfg_file => $cfg_file,
+        start_sh => $start_sh,
+        bind     => $bind,
+      }
+
     } else {
       fail( 'Not a valid app type')
     }

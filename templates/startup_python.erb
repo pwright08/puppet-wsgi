@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+# Startup script for Land Registry's <%= @name %> WSGI application
+
+# Port the application should listen on
+PORT=<%= @bind %>
+
+# Load environment variables
+echo 'Loading environment variables...'
+source <%= @cfg_file  %>
+
+# Ensure python can find modules correctly
+PYTHONPATH='<%= @code_dir %>'
+cd <%= @code_dir %>
+
+<%- if @app_type == 'python' -%>
+<%= @venv_dir %>/bin/python <%= @code_dir %>/run.py
+<% end %>
