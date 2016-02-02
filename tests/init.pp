@@ -31,12 +31,9 @@ wsgi::application { 'spark-app' :
     'TESTVALUE' => 'test',
   }
 }
-wsgi::application { 'synchroniser' :
-  bind          => '5002',
-  source        => 'https://github.com/LandRegistry/lc-synchroniser.git',
+wsgi::application { 'test-python-app' :
+  bind          => '5003',
+  source        => 'https://github.com/sweavers/test-python-app.git',
   environment   => 'Integration',
   app_type      => 'python',
-  vars          => {
-    'SETTINGS' => 'config.PreviewConfig',
-  }
 }

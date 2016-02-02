@@ -12,6 +12,4 @@ source <%= @cfg_file  %>
 PYTHONPATH='<%= @code_dir %>'
 cd <%= @code_dir %>
 
-<%- if @app_type == 'python' -%>
 <%= @venv_dir %>/bin/python <%= @code_dir %>/run.py
-<% end %>
