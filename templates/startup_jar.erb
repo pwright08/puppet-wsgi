@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+# Startup script for Land Registry's <%= @name %> WSGI application
+
+# Port the application should listen on
+export PORT=<%= @bind %>
+
+# Load environment variables
+echo 'Loading environment variables...'
+source <%= @cfg_file  %>
+
+# Ensure python can find modules correctly
+export JAVA_HOME=/usr/lib/jvm/java-1.8.0-openjdk/
+cd <%= @code_dir %>
+
+nohup java -jar <%= @jar_name  %> 2> <%= @error_log %> 1> <%= @access_log %> &
+echo $! > ../<%= @service %>.pid

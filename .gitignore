@@ -2,3 +2,4 @@ log/
 junit/
 pkg/
 spec/fixtures/
+.vagrant

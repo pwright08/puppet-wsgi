@@ -3,7 +3,6 @@
 # This type is used to manage the installation.
 #
 define wsgi::application (
-
   $ensure       = 'present',
   $owner        = $wsgi::params::user,
   $group        = $wsgi::params::group,
@@ -15,6 +14,7 @@ define wsgi::application (
   $bind         = undef,
   $vars         = undef,
   $source       = undef,
+  $jar_name     = undef,
   $app_type     = 'wsgi',
   $vs_server    = undef,
   $environment  = undef,
@@ -42,13 +42,13 @@ define wsgi::application (
 
   if $vs_server != undef and $environment != undef and $vs_app_host != undef {
 
-    $vs_json = getvars("$vs_app_host/api/$environment/$name", $vs_app_token)
+    # Connect to version store to get repoistory, app version and variables
+    $vs_json = getvars("${vs_app_host}/api/${environment}/${name}", $vs_app_token)
 
     $git_revision = $vs_json['version']
     $app_vars = $vs_json['variables']
     $repo_address = $vs_json['repository']
     $local_config = False
-    
   } else {
     $git_revision = $revision
     $app_vars = $vars
@@ -63,13 +63,6 @@ define wsgi::application (
 
     # Input validation
     ############################################################################
-    if $app_type in ['wsgi', 'python'] == false {
-      fail( 'Not a valid app type')
-    }
-
-    if $app_type == 'wsgi' and $bind == undef {
-      fail( 'Bind value must be set to an integer representing a network port')
-    }
     if $repo_address == undef {
       fail( 'Source/repo_address parameter must be provided')
     }
@@ -111,8 +104,7 @@ define wsgi::application (
       revision   => $git_revision,
       submodules => true,
       require    => File[$directory],
-      notify     => [Exec[$commit_file], Exec[$version_file]],
-      before     => File["${name} requirements.txt"]
+      notify     => [Exec[$commit_file], Exec[$version_file]]
     }
 
     exec { $commit_file:
@@ -148,45 +140,50 @@ define wsgi::application (
       }
     }
 
-
-    # Virtual environment
+    # Application Type Custom Code
     ############################################################################
-    file { "${name} requirements.txt":
-      ensure  => file,
-      path    => "${code_dir}/requirements.txt",
-      owner   => $owner,
-      group   => $group,
-      require => File[$code_dir]
-    }
+    if ($app_type == 'wsgi') {
 
-    exec { "${name} virtualenv":
-      command => "pyvenv3 ${venv_dir}",
-      user    => $owner,
-      group   => $group,
-      creates => "${venv_dir}/bin/activate",
-      path    => '/usr/local/bin:/usr/bin:/bin',
-      unless  => "grep '^[\\t ]*VIRTUAL_ENV=[\\\\'\\\"]*${venv_dir}[\\\"\\\\'][\\t ]*$' ${venv_dir}/bin/activate",
-      require => File[$venv_dir],
-      notify  => Exec["${name} dependencies"]
-    }
+      wsgi::types::wsgi { $name:
+        code_dir => $code_dir,
+        venv_dir => $venv_dir,
+        owner    => $owner,
+        group    => $group,
+        service  => $service,
+        cfg_file => $cfg_file,
+        start_sh => $start_sh,
+        bind     => $bind
+      }
 
-    exec { "${name} dependencies":
-      command   => "${venv_dir}/bin/pip install -r ${code_dir}/requirements.txt",
-      user      => $owner,
-      group     => $group,
-      require   => [Exec["${name} virtualenv"], File["${name} requirements.txt"]],
-      subscribe => Vcsrepo[$code_dir]
-      #refreshonly => true
-    }
+    } elsif ($app_type == 'jar') {
 
-    exec { "${name} gunicorn":
-      command => "${venv_dir}/bin/pip install gunicorn",
-      user    => $owner,
-      group   => $group,
-      creates => "${venv_dir}/bin/gunicorn",
-      require => Exec["${name} dependencies"]
-    }
+      wsgi::types::jar { $name:
+        code_dir => $code_dir,
+        owner    => $owner,
+        group    => $group,
+        service  => $service,
+        cfg_file => $cfg_file,
+        start_sh => $start_sh,
+        jar_name => $jar_name,
+        bind     => $bind
+      }
 
+    } elsif ($app_type == 'python') {
+
+      wsgi::types::python { $name:
+        code_dir => $code_dir,
+        venv_dir => $venv_dir,
+        owner    => $owner,
+        group    => $group,
+        service  => $service,
+        cfg_file => $cfg_file,
+        start_sh => $start_sh,
+        bind     => $bind,
+      }
+
+    } else {
+      fail( 'Not a valid app type')
+    }
 
     # Configuration
     ############################################################################
@@ -200,23 +197,13 @@ define wsgi::application (
       notify  => Service[$service]
     }
 
-    file { $start_sh:
-      ensure  => file,
-      owner   => $owner,
-      group   => $group,
-      mode    => '0775',
-      content => template('wsgi/startup.erb'),
-      require => File[$cfg_file],
-      notify  => Service[$service]
-    }
-
     file { $sysd_file:
       ensure  => file,
       owner   => $owner,
       group   => $group,
       mode    => '0664',
       content => template('wsgi/service.erb'),
-      require => [File[$start_sh], File[$logs_dir], Exec["${name} gunicorn"]],
+      require => [File[$start_sh], File[$logs_dir]],
       notify  => Service[$service]
     }
 
@@ -234,7 +221,6 @@ define wsgi::application (
       hasstatus  => true,
       require    => File[$sysd_file]
     }
-
 
   # Remove application & configuration
   ##############################################################################
@@ -255,8 +241,6 @@ define wsgi::application (
     file { $sysd_file:
       ensure => absent
     }
-
-
   # Fail if we receive an unusual ensure value
   ##############################################################################
   } else {

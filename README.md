@@ -16,12 +16,16 @@ landregistry-wsgi
 
 ## Overview
 
-Manages the installation and configuration of Python WSGI applications intended to be run on Land Registry infrastructure.
+Manages the installation and configuration applications intended to be run on Land Registry infrastructure.
 
+Currently supported apps:
+
+* Python WSGI applications
+* Java Jars
 
 ## Module Description
 
-LandRegistry-WSGI provides a new Puppet type, `wsgi::application`, which handles the installation and configuration of Python WSGI applications using Gunicorn and SystemD.
+LandRegistry-application provides a new Puppet type, `wsgi::application`, which handles the installation and configuration of Python WSGI applications using Gunicorn and Java Jars running in SystemD.
 
 
 ## Setup
@@ -33,11 +37,11 @@ Simply providing a git repository to pull your application's source code from, a
 
 ``` puppet
 wsgi::application { 'cases-frontend':
-  bind   => '5000',
-  source => 'https://github.com/LandRegistry/cases-frontend.git'
+  bind     => '5000',
+  source   => 'https://github.com/LandRegistry/cases-frontend.git',
+  app_type => 'wsgi'
 }
 ```
-
 
 ### Directory structure of WSGI applications
 
@@ -61,31 +65,31 @@ Full representation of the directory structure:
 
     /opt/landregistry/applications/APPLICATION
       ├── logs/
-      │    ├── access.log
-      │    └── error.log
+      │    ├── access.log
+      │    └── error.log
       ├── source/
-      │    ├── acceptance_tests/
-      │    ├── application/
-      │    │    ├── static/
-      │    │    ├── templates/
-      │    │    └── routes.py
-      │    ├── tests/
-      │    ├── config.py
-      │    ├── manage.py
-      │    └── requirements.txt
-      ├── virtualenv/
-      │    ├── bin/
-      │    │    ├── activate
-      │    │    ├── easy_install
-      │    │    ├── gunicorn
-      │    │    ├── pip
-      │    │    └── python -> /usr/local/bin/python3.4
-      │    ├── include/
-      │    ├── lib/
-      │    │    └── python3.4/
-      │    │         └── site-packages/
-      │    ├── lib64 -> lib
-      │    └── pyvenv.cfg
+      │    ├── acceptance_tests/
+      │    ├── application/
+      │    │    ├── static/
+      │    │    ├── templates/
+      │    │    └── routes.py
+      │    ├── tests/
+      │    ├── config.py
+      │    ├── manage.py
+      │    └── requirements.txt
+      ├── virtualenv/ (For wsgi applications)
+      │    ├── bin/
+      │    │    ├── activate
+      │    │    ├── easy_install
+      │    │    ├── gunicorn
+      │    │    ├── pip
+      │    │    └── python -> /usr/local/bin/python3.4
+      │    ├── include/
+      │    ├── lib/
+      │    │    └── python3.4/
+      │    │         └── site-packages/
+      │    ├── lib64 -> lib
+      │    └── pyvenv.cfg
       ├── COMMIT
       ├── lr-APPLICATION.pid
       ├── lr-APPLICATION.service -> /usr/lib/systemd/system/lr-APPLICATION.service
@@ -106,19 +110,25 @@ Coming soon...
 
 ## Limitations
 
-Currently LandRegistry::WSGI makes some fairly strict assumptions about your system and setup. It's not recommended that this module is used by the general public at this point.
+Currently application::app makes some fairly strict assumptions about your system and setup. It's not recommended that this module is used by the general public at this point.
 
 Firstly, only Git is currently supported as a source. Installation from a package will come soon, but will be fairly inflexible.
 
 Secondly, it is assumed that you wish to install your application under `/opt/landregistry/applications`.
-
-Thirdly, Gunicorn is currently the only available web server supported.
 
 
 ## Development
 
 Coming soon...
 
+## Testing
+
+Testing using vagrant:
+```
+vagrant up
+vagrant ssh
+sudo puppet apply /etc/puppet/modules/wsgi/tests/init.pp
+```
 
 ## Release Notes
 

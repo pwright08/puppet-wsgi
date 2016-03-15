@@ -1,0 +1,17 @@
+---
+
+  language: ruby
+  rvm:
+    - 2.1.0
+
+  before_install:
+    - rm Gemfile.lock #Puppetfile.lock
+  install:
+    - bundle install
+    - puppet --version
+    - facter --version
+    - librarian-puppet install
+
+  script:
+    - #rake test
+    - rake validation
