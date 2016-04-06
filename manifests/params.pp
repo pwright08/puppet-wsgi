@@ -10,6 +10,9 @@ class wsgi::params {
   $wsgi_entry = 'application.routes:app'
   $app_dir    = '/opt/landregistry/applications'
 
+  $workers = $::processorcount * 4
+  $threads = $::processorcount * 2
+
   # Default git branch to pull from
   $git_revision   = 'master'
 

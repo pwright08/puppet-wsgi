@@ -39,6 +39,8 @@ define wsgi::application (
   $access_log   = "${logs_dir}/access.log"
   $error_log    = "${logs_dir}/error.log"
   $log_level    = 'info'
+  $workers      = ${wsgi::params::workers}
+  $threads      = ${wsgi::params::threads}
 
   if $vs_server != undef and $environment != undef and $vs_app_host != undef {
 
