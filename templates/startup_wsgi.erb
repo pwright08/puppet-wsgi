@@ -36,4 +36,6 @@ $GUNICORN --bind           0.0.0.0:${PORT} \
           --access-logfile '<%= @access_log %>' \
           --error-logfile  '<%= @error_log %>' \
           --log-level      <%= @log_level %> \
+          --workers        <%= @workers %> \
+          --threads        <%= @threads %> \
           "<%= @wsgi_entry %>" # Entry point
