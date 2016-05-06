@@ -21,7 +21,8 @@ define wsgi::application (
   $vs_server    = undef,
   $environment  = undef,
   $vs_app_host  = undef,
-  $vs_app_token = undef
+  $vs_app_token = undef,
+  $extra_args   = undef
 ) {
 
   include stdlib

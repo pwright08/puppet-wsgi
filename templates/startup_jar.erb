@@ -12,5 +12,5 @@ source <%= @cfg_file  %>
 export JAVA_HOME=/usr/lib/jvm/java-1.8.0-openjdk/
 cd <%= @code_dir %>
 
-nohup java -jar <%= @jar_name  %> 2> <%= @error_log %> 1> <%= @access_log %> &
+nohup java -jar <%= @jar_name  %> <%= @extra_args %> 2> <%= @error_log %> 1> <%= @access_log %> &
 echo $! > ../<%= @service %>.pid
