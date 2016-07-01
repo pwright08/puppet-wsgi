@@ -8,6 +8,7 @@ define wsgi::types::wsgi(
   $group    = undef,
   $service  = undef,
   $cfg_file = undef,
+  $dep_file = undef,
   $start_sh = undef,
   $bind     = undef,
   ){

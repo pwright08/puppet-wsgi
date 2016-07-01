@@ -4,9 +4,10 @@
 # Port the application should listen on
 PORT=<%= @bind %>
 
-# Load environment variables
+# Load environment variables and immediatly override with any deployment varables
 echo 'Loading environment variables...'
 source <%= @cfg_file  %>
+source <%= @dep_file  %>
 
 # Ensure python can find modules correctly
 PYTHONPATH='<%= @code_dir %>'
@@ -25,6 +26,9 @@ if [ -f '<%= @code_dir %>/manage.py' ]; then
   fi
 fi
 <%- end -%>
+
+echo 'Re-Loading standard environment variables...'
+source <%= @cfg_file  %>
 
 # Run time
 echo "Starting web service on ${PORT}..."

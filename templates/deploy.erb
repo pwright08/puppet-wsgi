@@ -1,0 +1,13 @@
+# Environment variables for <%= @name %>
+
+# If VERSION or COMMIT exist expose them as variables
+[ -f '<%= @directory %>/VERSION' ] && export VERSION=$(cat <%= @directory %>/VERSION)
+[ -f '<%= @directory %>/COMMIT' ]  && export COMMIT=$(cat <%= @directory %>/COMMIT)
+
+<%- if @dep_vars -%>
+# Application-specific variables
+# Local config: <%= @local_config %>
+  <%- @dep_vars.sort.map do |key,value| -%>
+export <%= key %>='<%= value %>'
+  <%- end -%>
+<%- end -%>

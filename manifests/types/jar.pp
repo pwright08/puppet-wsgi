@@ -7,6 +7,7 @@ define wsgi::types::jar(
   $group    = undef,
   $service  = undef,
   $cfg_file = undef,
+  $dep_file = undef,
   $start_sh = undef,
   $jar_name = undef,
   $bind     = undef,

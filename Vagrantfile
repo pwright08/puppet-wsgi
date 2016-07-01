@@ -8,6 +8,7 @@ Vagrant.configure(2) do |config|
     puppet module install puppetlabs-vcsrepo
     puppet module install puppetlabs-stdlib
     ln -s /vagrant /etc/puppet/modules/wsgi
+    yum install -y libpqxx-devel postgresql-libs python-psycopg2 gcc-c++
   SCRIPT
 
   config.vm.network "private_network", :ip => "192.168.42.49"

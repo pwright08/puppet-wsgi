@@ -11,29 +11,32 @@
 #
 include wsgi
 wsgi::application { 'test-app' :
-  bind          => '5000',
-  wsgi_entry    => 'application.server:app',
-  source        => 'https://github.com/mooreandrew/test-app.git',
-  environment   => 'Integration',
-  app_type      => 'wsgi',
-  vars          => {
+  bind        => '5000',
+  wsgi_entry  => 'application.server:app',
+  source      => 'https://github.com/mooreandrew/test-app.git',
+  environment => 'Integration',
+  app_type    => 'wsgi',
+  vars        => {
     'TESTVALUE' => 'test',
     'SETTINGS'  => 'config.DevelopmentConfig'
+  },
+  deploy_vars => {
+    'TESTVALUE' => 'deploy'
   }
 } ->
 wsgi::application { 'spark-app' :
-  bind          => '5001',
-  source        => 'https://github.com/mooreandrew/gradle-test-jar.git',
-  environment   => 'Integration',
-  app_type      => 'jar',
-  jar_name      => 'gradle_test-1.0.jar',
-  vars          => {
+  bind        => '5001',
+  source      => 'https://github.com/mooreandrew/gradle-test-jar.git',
+  environment => 'Integration',
+  app_type    => 'jar',
+  jar_name    => 'gradle_test-1.0.jar',
+  vars        => {
     'TESTVALUE' => 'test',
   }
 }
 wsgi::application { 'test-python-app' :
-  bind          => '5003',
-  source        => 'https://github.com/sweavers/test-python-app.git',
-  environment   => 'Integration',
-  app_type      => 'python',
+  bind        => '5003',
+  source      => 'https://github.com/sweavers/test-python-app.git',
+  environment => 'Integration',
+  app_type    => 'python',
 }

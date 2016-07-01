@@ -15,6 +15,7 @@ define wsgi::application (
   $threads      = $wsgi::params::threads,
   $bind         = undef,
   $vars         = undef,
+  $deploy_vars  = undef,
   $source       = undef,
   $jar_name     = undef,
   $app_type     = 'wsgi',
@@ -34,6 +35,7 @@ define wsgi::application (
   $logs_dir     = "${directory}/logs"
   $pid_file     = "${directory}/${service}.pid"
   $cfg_file     = "${directory}/settings.conf"
+  $dep_file     = "${directory}/deploy.conf"
   $start_sh     = "${directory}/startup.sh"
   $sysd_link    = "${directory}/${service}.service"
   $sysd_file    = "${wsgi::params::systemd}/${service}.service"
@@ -49,12 +51,14 @@ define wsgi::application (
     $vs_json = getvars("${vs_app_host}/api/${environment}/${name}", $vs_app_token)
 
     $git_revision = $vs_json['version']
-    $app_vars = $vs_json['variables']
+    $app_vars     = $vs_json['variables']
+    $dep_vars     = $vs_json['variables_deployment']
     $repo_address = $vs_json['repository']
     $local_config = False
   } else {
     $git_revision = $revision
-    $app_vars = $vars
+    $app_vars     = $vars
+    $dep_vars     = $deploy_vars
     $repo_address = $source
     $local_config = True
   }
@@ -154,6 +158,7 @@ define wsgi::application (
         group    => $group,
         service  => $service,
         cfg_file => $cfg_file,
+        dep_file => $dep_file,
         start_sh => $start_sh,
         bind     => $bind
       }
@@ -166,6 +171,7 @@ define wsgi::application (
         group    => $group,
         service  => $service,
         cfg_file => $cfg_file,
+        dep_file => $dep_file,
         start_sh => $start_sh,
         jar_name => $jar_name,
         bind     => $bind
@@ -180,6 +186,7 @@ define wsgi::application (
         group    => $group,
         service  => $service,
         cfg_file => $cfg_file,
+        dep_file => $dep_file,
         start_sh => $start_sh,
         bind     => $bind,
       }
@@ -196,6 +203,16 @@ define wsgi::application (
       group   => $group,
       mode    => '0664',
       content => template('wsgi/environment.erb'),
+      require => File[$directory],
+      notify  => Service[$service]
+    }
+
+    file { $dep_file:
+      ensure  => file,
+      owner   => $owner,
+      group   => $group,
+      mode    => '0664',
+      content => template('wsgi/deploy.erb'),
       require => File[$directory],
       notify  => Service[$service]
     }
