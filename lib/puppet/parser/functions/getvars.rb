@@ -35,19 +35,27 @@ be returned if the parsing of YAML string have failed.
 
       request = Net::HTTP::Get.new(uri.request_uri)
       request.basic_auth(arguments[1], "")
-      response = http.request(request).body
+      response = http.request(request)
 
     rescue Exception => e
         raise('App Version Control Error: Failed to connect to ' + arguments[0])
     end
 
+    if response.code == '200' then
+      begin
+        PSON::load(response.body)
+      rescue Exception => e
+          raise('Failed to parse json response from ' + arguments[0] + '. The respons was: ' + response.body)
+      end
 
-    print(response)
-    begin
-      JSON.parse(response)
-    rescue Exception => e
-        raise('App Version Control Error: Failed to parse json response from ' + arguments[0])
+    else
+      if response.body != '' then
+        raise('Failed to parse json response from ' + arguments[0] + '. The respons was: ' + response.body)
+      else
+        raise('Failed to parse json response from ' + arguments[0] + '. Empty response from the server - invalid token?')
+      end
     end
+
 
   end
 end
