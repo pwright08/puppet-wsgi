@@ -1,6 +1,4 @@
 
-
-
 define wsgi::types::wsgi(
   $code_dir = undef,
   $venv_dir = undef,

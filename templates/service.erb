@@ -7,8 +7,8 @@ After=network.target
 [Service]
 Type=simple
 PIDFile=<%= @pid_file %>
-User=<%= @owner %>
-Group=<%= @group %>
+User=<%= @app_user %>
+Group=<%= @app_group %>
 WorkingDirectory=<%= @code_dir %>
 ExecStart=<%= @start_sh %>
 ExecReload=/bin/kill -s HUP $MAINPID
