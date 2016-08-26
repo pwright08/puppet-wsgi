@@ -4,8 +4,8 @@
 #
 define wsgi::application (
   $ensure       = 'present',
-  $owner        = $wsgi::params::user,
-  $group        = $wsgi::params::group,
+  $owner        = undef,
+  $group        = undef,
   $wsgi_entry   = $wsgi::params::wsgi_entry,
   $revision     = $wsgi::params::git_revision,
   $directory    = "${wsgi::params::app_dir}/${name}",
@@ -45,6 +45,11 @@ define wsgi::application (
   $error_log    = "${logs_dir}/error.log"
   $log_level    = 'info'
 
+  # If a user/group is not specified we should assume the user should have it's
+  # own account for which we'll use the same name as the service itself.
+  if $owner { $app_user  = $owner } else { $app_user  = $service }
+  if $group { $app_group = $group } else { $app_group = $service }
+
   if $vs_server != undef and $environment != undef and $vs_app_host != undef {
 
     # Connect to version store to get repoistory, app version and variables
@@ -67,40 +72,55 @@ define wsgi::application (
   ##############################################################################
   if $ensure == 'present' {
 
-
     # Input validation
     ############################################################################
     if $repo_address == undef {
       fail( 'Source/repo_address parameter must be provided')
     }
 
+    # User account management
+    ############################################################################
+
+    if $app_user != $owner {
+      user { $app_user :
+        ensure  => present,
+        system  => true,
+        home    => $directory,
+        comment => "LR service account for ${name}"
+      }
+    }
+    if $app_group != $group {
+      group { $app_group :
+        ensure => present,
+        system => true
+      }
+    }
 
     # Directory structure
     ############################################################################
     file { $directory:
       ensure  => directory,
-      owner   => $owner,
-      group   => $group,
+      owner   => $app_user,
+      group   => $app_group,
       mode    => '0775',
       require => Class[wsgi]
     }
 
     file { [$venv_dir, $logs_dir, $code_dir]:
       ensure  => directory,
-      owner   => $owner,
-      group   => $group,
+      owner   => $app_user,
+      group   => $app_group,
       mode    => '0775',
       require => File[$directory]
     }
 
     file { [$access_log, $error_log]:
       ensure  => file,
-      owner   => $owner,
-      group   => $group,
+      owner   => $app_user,
+      group   => $app_group,
       mode    => '0644',
       require => File[$directory]
     }
-
 
     # Source code
     ############################################################################
@@ -116,8 +136,8 @@ define wsgi::application (
 
     exec { $commit_file:
       command     => "git rev-parse --verify HEAD > ${commit_file}",
-      user        => $owner,
-      group       => $group,
+      user        => $app_user,
+      group       => $app_group,
       cwd         => $code_dir,
       refreshonly => true,
       path        => '/usr/local/bin:/usr/bin:/bin',
@@ -128,8 +148,8 @@ define wsgi::application (
     if $git_revision == undef {
       exec { $version_file:
         command     => "echo 'latest' > ${version_file}",
-        user        => $owner,
-        group       => $group,
+        user        => $app_user,
+        group       => $app_group,
         cwd         => $code_dir,
         refreshonly => true,
         path        => '/usr/local/bin:/usr/bin:/bin',
@@ -138,8 +158,8 @@ define wsgi::application (
     } else {
       exec { $version_file:
         command     => "echo ${revision} > ${version_file}",
-        user        => $owner,
-        group       => $group,
+        user        => $app_user,
+        group       => $app_group,
         cwd         => $code_dir,
         refreshonly => true,
         path        => '/usr/local/bin:/usr/bin:/bin',
@@ -154,8 +174,8 @@ define wsgi::application (
       wsgi::types::wsgi { $name:
         code_dir => $code_dir,
         venv_dir => $venv_dir,
-        owner    => $owner,
-        group    => $group,
+        owner    => $app_user,
+        group    => $app_group,
         service  => $service,
         cfg_file => $cfg_file,
         dep_file => $dep_file,
@@ -167,8 +187,8 @@ define wsgi::application (
 
       wsgi::types::jar { $name:
         code_dir => $code_dir,
-        owner    => $owner,
-        group    => $group,
+        owner    => $app_user,
+        group    => $app_group,
         service  => $service,
         cfg_file => $cfg_file,
         dep_file => $dep_file,
@@ -182,8 +202,8 @@ define wsgi::application (
       wsgi::types::python { $name:
         code_dir => $code_dir,
         venv_dir => $venv_dir,
-        owner    => $owner,
-        group    => $group,
+        owner    => $app_user,
+        group    => $app_group,
         service  => $service,
         cfg_file => $cfg_file,
         dep_file => $dep_file,
@@ -199,8 +219,8 @@ define wsgi::application (
     ############################################################################
     file { $cfg_file:
       ensure  => file,
-      owner   => $owner,
-      group   => $group,
+      owner   => $app_user,
+      group   => $app_group,
       mode    => '0664',
       content => template('wsgi/environment.erb'),
       require => File[$directory],
@@ -209,8 +229,8 @@ define wsgi::application (
 
     file { $dep_file:
       ensure  => file,
-      owner   => $owner,
-      group   => $group,
+      owner   => $app_user,
+      group   => $app_group,
       mode    => '0664',
       content => template('wsgi/deploy.erb'),
       require => File[$directory],
@@ -219,8 +239,8 @@ define wsgi::application (
 
     file { $sysd_file:
       ensure  => file,
-      owner   => $owner,
-      group   => $group,
+      owner   => $app_user,
+      group   => $app_group,
       mode    => '0664',
       content => template('wsgi/service.erb'),
       require => [File[$start_sh], File[$logs_dir]],
@@ -245,6 +265,11 @@ define wsgi::application (
   # Remove application & configuration
   ##############################################################################
   } elsif $ensure == 'absent' {
+
+    # If we have created an account specifically for this application, we'll
+    # need to clean that account up at the end of our work.
+    if $app_user != $owner  { user { $app_user : ensure => absent }}
+    if $app_group != $group { group { $app_group : ensure => absent }}
 
     file { $directory:
       ensure  => absent,

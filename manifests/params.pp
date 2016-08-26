@@ -5,8 +5,6 @@
 #
 class wsgi::params {
 
-  $user       = 'root'
-  $group      = 'root'
   $wsgi_entry = 'application.routes:app'
   $app_dir    = '/opt/landregistry/applications'
 
