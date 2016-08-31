@@ -294,6 +294,7 @@ define wsgi::application (
 
     file { $sysd_file :      ensure => absent }
     file { $logrotate_file : ensure => absent }
+
   # Fail if we receive an unusual ensure value
   ##############################################################################
   } else {

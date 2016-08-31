@@ -2,7 +2,7 @@
 # Startup script for Land Registry's <%= @name %> WSGI application
 
 # Port the application should listen on
-PORT=<%= @bind %>
+export PORT=<%= @bind %>
 
 # Load environment variables and immediatly override with any deployment varables
 echo 'Loading environment variables...'
