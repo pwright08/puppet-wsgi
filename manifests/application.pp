@@ -30,21 +30,22 @@ define wsgi::application (
 
   # Static variables
   ##############################################################################
-  $venv_dir       = "${directory}/virtualenv"
-  $code_dir       = "${directory}/source"
-  $logs_dir       = "${directory}/logs"
-  $pid_file       = "${directory}/${service}.pid"
-  $cfg_file       = "${directory}/settings.conf"
-  $dep_file       = "${directory}/deploy.conf"
-  $start_sh       = "${directory}/startup.sh"
-  $sysd_link      = "${directory}/${service}.service"
-  $sysd_file      = "${wsgi::params::systemd}/${service}.service"
-  $logrotate_file = "${wsgi::params::logrotate}/${service}.conf"
-  $commit_file    = "${directory}/COMMIT"
-  $version_file   = "${directory}/VERSION"
-  $access_log     = "${logs_dir}/access.log"
-  $error_log      = "${logs_dir}/error.log"
-  $log_level      = 'info'
+  $venv_dir        = "${directory}/virtualenv"
+  $code_dir        = "${directory}/source"
+  $logs_dir        = "${directory}/logs"
+  $pid_file        = "${directory}/${service}.pid"
+  $cfg_file        = "${directory}/settings.conf"
+  $dep_file        = "${directory}/deploy.conf"
+  $start_sh        = "${directory}/startup.sh"
+  $sysd_link       = "${directory}/${service}.service"
+  $sysd_file       = "${wsgi::params::systemd}/${service}.service"
+  $logrotate_file  = "${wsgi::params::logrotate}/${service}.conf"
+  $commit_file     = "${directory}/COMMIT"
+  $version_file    = "${directory}/VERSION"
+  $access_log      = "${logs_dir}/access.log"
+  $error_log       = "${logs_dir}/error.log"
+  $application_log = "${logs_dir}/application.log"
+  $log_level       = 'info'
 
   # If a user/group is not specified we should assume the user should have it's
   # own account for which we'll use the same name as the service itself.

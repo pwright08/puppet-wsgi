@@ -11,7 +11,6 @@ define wsgi::types::wsgi(
   $bind     = undef,
   ){
 
-
     if $bind == undef {
       fail( 'Bind value must be set to an integer representing a network port')
     }

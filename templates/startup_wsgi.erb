@@ -30,6 +30,11 @@ fi
 echo 'Re-Loading standard environment variables...'
 source <%= @cfg_file  %>
 
+# Logging configuration
+ACCESS_LOG='<%= @access_log %>'
+ERROR_LOG='<%= @error_log %>'
+APPLICATION_LOG='<%= @application_log %>'
+
 # Run time
 echo "Starting web service on ${PORT}..."
 GUNICORN='<%= @venv_dir %>/bin/gunicorn'
@@ -37,10 +42,10 @@ $GUNICORN --bind           0.0.0.0:${PORT} \
           --name           <%= @service  %> \
           --pid            '<%= @pid_file %>' \
           --chdir          '<%= @code_dir %>/' \
-          --access-logfile '<%= @access_log %>' \
-          --error-logfile  '<%= @error_log %>' \
+          --error-logfile  ${ERROR_LOG} \
+          --access-logfile ${ACCESS_LOG} \
           --log-level      <%= @log_level %> \
           --workers        <%= @workers %> \
           --threads        <%= @threads %> \
           <%= @extra_args %> \
-          "<%= @wsgi_entry %>" # Entry point
+          "<%= @wsgi_entry %>" > >(tee -a ${APPLICATION_LOG}) 2> >(tee -a ${APPLICATION_LOG} >&2)
