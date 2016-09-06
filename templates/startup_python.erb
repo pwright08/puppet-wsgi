@@ -12,6 +12,9 @@ source <%= @cfg_file  %>
 PYTHONPATH='<%= @code_dir %>'
 cd <%= @code_dir %>
 
+# Logging configuration
+APPLICATION_LOG='<%= @application_log %>'
+
 # Run time
 echo "Starting python service..."
-<%= @venv_dir %>/bin/python <%= @code_dir %>/run.py <%= @extra_args %>
+<%= @venv_dir %>/bin/python <%= @code_dir %>/run.py <%= @extra_args %> > >(tee -a ${APPLICATION_LOG}) 2> >(tee -a ${APPLICATION_LOG} >&2)
