@@ -11,6 +11,7 @@ define wsgi::application (
   $directory    = "${wsgi::params::app_dir}/${name}",
   $service      = "lr-${name}",
   $manage       = true,
+  $logging      = false,
   $workers      = $wsgi::params::workers,
   $threads      = $wsgi::params::threads,
   $bind         = undef,
@@ -183,6 +184,27 @@ define wsgi::application (
         dep_file => $dep_file,
         start_sh => $start_sh,
         bind     => $bind
+      }
+
+      # Logging configuration
+      ############################################################################
+      # This section should be moved into the global setup once ready to roll out
+      # for other application types.
+
+      if $logging {
+        # Because Puppet doesn't manage entire directory trees (why?), we need to
+        # create but not manage the parent directories.
+        $filebeat_dirs = ['/etc/filebeat', '/etc/filebeat/filebeat.d']
+        $filebeat_conf = "/etc/filebeat/filebeat.d/${service}.yml"
+        ensure_resource('file', $filebeat_dirs, { ensure => directory })
+
+        file { $filebeat_conf : 
+          ensure  => present,
+          owner   => $app_user,
+          group   => $app_group,
+          mode    => '0644',
+          content => template('wsgi/filebeat.erb')
+        }
       }
 
     } elsif ($app_type == 'jar') {
