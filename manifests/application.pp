@@ -198,7 +198,7 @@ define wsgi::application (
         $filebeat_conf = "/etc/filebeat/filebeat.d/${service}.yml"
         ensure_resource('file', $filebeat_dirs, { ensure => directory })
 
-        file { $filebeat_conf : 
+        file { $filebeat_conf :
           ensure  => present,
           owner   => $app_user,
           group   => $app_group,
