@@ -11,6 +11,7 @@ define wsgi::application (
   $directory    = "${wsgi::params::app_dir}/${name}",
   $service      = "lr-${name}",
   $manage       = true,
+  $logging      = false,
   $workers      = $wsgi::params::workers,
   $threads      = $wsgi::params::threads,
   $bind         = undef,
@@ -30,20 +31,22 @@ define wsgi::application (
 
   # Static variables
   ##############################################################################
-  $venv_dir     = "${directory}/virtualenv"
-  $code_dir     = "${directory}/source"
-  $logs_dir     = "${directory}/logs"
-  $pid_file     = "${directory}/${service}.pid"
-  $cfg_file     = "${directory}/settings.conf"
-  $dep_file     = "${directory}/deploy.conf"
-  $start_sh     = "${directory}/startup.sh"
-  $sysd_link    = "${directory}/${service}.service"
-  $sysd_file    = "${wsgi::params::systemd}/${service}.service"
-  $commit_file  = "${directory}/COMMIT"
-  $version_file = "${directory}/VERSION"
-  $access_log   = "${logs_dir}/access.log"
-  $error_log    = "${logs_dir}/error.log"
-  $log_level    = 'info'
+  $venv_dir        = "${directory}/virtualenv"
+  $code_dir        = "${directory}/source"
+  $logs_dir        = "${directory}/logs"
+  $pid_file        = "${directory}/${service}.pid"
+  $cfg_file        = "${directory}/settings.conf"
+  $dep_file        = "${directory}/deploy.conf"
+  $start_sh        = "${directory}/startup.sh"
+  $sysd_link       = "${directory}/${service}.service"
+  $sysd_file       = "${wsgi::params::systemd}/${service}.service"
+  $logrotate_file  = "${wsgi::params::logrotate}/${service}.conf"
+  $commit_file     = "${directory}/COMMIT"
+  $version_file    = "${directory}/VERSION"
+  $access_log      = "${logs_dir}/access.log"
+  $error_log       = "${logs_dir}/error.log"
+  $application_log = "${logs_dir}/application.log"
+  $log_level       = 'info'
 
   # If a user/group is not specified we should assume the user should have it's
   # own account for which we'll use the same name as the service itself.
@@ -183,6 +186,27 @@ define wsgi::application (
         bind     => $bind
       }
 
+      # Logging configuration
+      ############################################################################
+      # This section should be moved into the global setup once ready to roll out
+      # for other application types.
+
+      if $logging {
+        # Because Puppet doesn't manage entire directory trees (why?), we need to
+        # create but not manage the parent directories.
+        $filebeat_dirs = ['/etc/filebeat', '/etc/filebeat/filebeat.d']
+        $filebeat_conf = "/etc/filebeat/filebeat.d/${service}.yml"
+        ensure_resource('file', $filebeat_dirs, { ensure => directory })
+
+        file { $filebeat_conf :
+          ensure  => present,
+          owner   => $app_user,
+          group   => $app_group,
+          mode    => '0644',
+          content => template('wsgi/filebeat.erb')
+        }
+      }
+
     } elsif ($app_type == 'jar') {
 
       wsgi::types::jar { $name:
@@ -262,6 +286,14 @@ define wsgi::application (
       require    => File[$sysd_file]
     }
 
+    file { $logrotate_file :
+      ensure  => present,
+      owner   => $app_user,
+      group   => $app_group,
+      mode    => '0644',
+      content => template('wsgi/logrotate.erb')
+    }
+
   # Remove application & configuration
   ##############################################################################
   } elsif $ensure == 'absent' {
@@ -283,9 +315,9 @@ define wsgi::application (
       enable => false
     }
 
-    file { $sysd_file:
-      ensure => absent
-    }
+    file { $sysd_file :      ensure => absent }
+    file { $logrotate_file : ensure => absent }
+
   # Fail if we receive an unusual ensure value
   ##############################################################################
   } else {

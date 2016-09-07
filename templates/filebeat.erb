@@ -1,0 +1,26 @@
+# Filebeat configuration for <%= @name %> application.
+
+filebeat:
+
+  prospectors:
+
+    # Application log configuration.
+    -
+      paths:
+        - <%= @application_log %>
+        - <%= @error_log %>
+      document_type: lr-application
+      fields:
+        application: '<%= @name %>'
+        environment: '<%= @environment %>'
+        version:     '<%= @revision %>'
+
+    # HTTP access log configuration.
+    -
+      paths:
+        - <%= @access_log %>
+      document_type: access
+      fields:
+        application: '<%= @name %>'
+        environment: '<%= @environment %>'
+        version:     '<%= @revision %>'

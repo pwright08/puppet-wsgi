@@ -1,0 +1,12 @@
+## MANAGED BY PUPPET
+
+# Backup <%= @service %> log files
+<%= @logging_path %>/*.log {
+  missingok
+  notifempty
+  dateext
+  dateformat %Y-%m-%d
+  rotate 4
+  weekly
+  compress
+}
