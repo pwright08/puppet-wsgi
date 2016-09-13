@@ -71,6 +71,15 @@ define wsgi::application (
     $local_config = True
   }
 
+  # check if the application needs to run as a service
+  if ($app_type in [ 'wsgi', 'jar', 'python' ]) {
+    $run_as_service = True
+    $service_notify = Service[$service]
+  } else {
+    $run_as_service = False
+    $service_notify = undef
+  }
+
   # Install and configure application environment
   ##############################################################################
   if $ensure == 'present' {
@@ -145,7 +154,7 @@ define wsgi::application (
       refreshonly => true,
       path        => '/usr/local/bin:/usr/bin:/bin',
       require     => Vcsrepo[$code_dir],
-      notify      => Service[$service]
+      notify      => $service_notify
     }
 
     if $git_revision == undef {
@@ -235,6 +244,10 @@ define wsgi::application (
         bind     => $bind,
       }
 
+    } elsif ($app_type == 'batch') {
+
+      # Nothing extra needs to be done
+
     } else {
       fail( 'Not a valid app type')
     }
@@ -248,7 +261,7 @@ define wsgi::application (
       mode    => '0664',
       content => template('wsgi/environment.erb'),
       require => File[$directory],
-      notify  => Service[$service]
+      notify  => $service_notify
     }
 
     file { $dep_file:
@@ -258,32 +271,37 @@ define wsgi::application (
       mode    => '0664',
       content => template('wsgi/deploy.erb'),
       require => File[$directory],
-      notify  => Service[$service]
+      notify  => $service_notify
     }
 
-    file { $sysd_file:
-      ensure  => file,
-      owner   => $app_user,
-      group   => $app_group,
-      mode    => '0664',
-      content => template('wsgi/service.erb'),
-      require => [File[$start_sh], File[$logs_dir]],
-      notify  => Service[$service]
-    }
+    # only create the service if required
+    if ($run_as_service == True) {
 
-    file { $sysd_link:
-      ensure    => link,
-      target    => $sysd_file,
-      require   => File[$sysd_file],
-      subscribe => Vcsrepo[$code_dir]
-    }
+      file { $sysd_file:
+        ensure  => file,
+        owner   => $app_user,
+        group   => $app_group,
+        mode    => '0664',
+        content => template('wsgi/service.erb'),
+        require => [File[$start_sh], File[$logs_dir]],
+        notify  => Service[$service]
+      }
 
-    service { $service:
-      ensure     => running,
-      enable     => true,
-      hasrestart => true,
-      hasstatus  => true,
-      require    => File[$sysd_file]
+      file { $sysd_link:
+        ensure    => link,
+        target    => $sysd_file,
+        require   => File[$sysd_file],
+        subscribe => Vcsrepo[$code_dir]
+      }
+
+      service { $service:
+        ensure     => running,
+        enable     => true,
+        hasrestart => true,
+        hasstatus  => true,
+        require    => File[$sysd_file]
+      }
+
     }
 
     file { $logrotate_file :
