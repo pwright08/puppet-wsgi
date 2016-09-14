@@ -50,4 +50,12 @@ wsgi::application { 'scheduled_file' :
   vars        => {
     'TESTVALUE' => 'test',
   }
+} ->
+wsgi::application { 'test_absent1' :
+  ensure      => absent,
+  app_type    => 'wsgi',
+} ->
+wsgi::application { 'test_absent2' :
+  ensure      => absent,
+  app_type    => 'batch',
 }

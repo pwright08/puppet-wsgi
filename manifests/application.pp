@@ -72,12 +72,12 @@ define wsgi::application (
   }
 
   # check if the application needs to run as a service
-  if ($app_type in [ 'wsgi', 'jar', 'python' ]) {
-    $run_as_service = True
-    $service_notify = Service[$service]
-  } else {
+  if ! ($app_type in [ 'wsgi', 'jar', 'python' ]) {
     $run_as_service = False
     $service_notify = undef
+  } else {
+    $run_as_service = True
+    $service_notify = Service[$service]
   }
 
   # Install and configure application environment
@@ -276,7 +276,6 @@ define wsgi::application (
 
     # only create the service if required
     if ($run_as_service == True) {
-
       file { $sysd_file:
         ensure  => file,
         owner   => $app_user,
@@ -301,7 +300,17 @@ define wsgi::application (
         hasstatus  => true,
         require    => File[$sysd_file]
       }
-
+    } else {
+      file { $sysd_file:
+        ensure => absent,
+      }
+      file { $sysd_link:
+        ensure => absent,
+      }
+      service { $service:
+        ensure => stopped,
+        enable => false
+      }
     }
 
     file { $logrotate_file :
