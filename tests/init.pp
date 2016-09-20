@@ -33,10 +33,29 @@ wsgi::application { 'spark-app' :
   vars        => {
     'TESTVALUE' => 'test',
   }
-}
+} ->
 wsgi::application { 'test-python-app' :
   bind        => '5003',
-  source      => 'https://github.com/sweavers/test-python-app.git',
+  source      => 'https://github.com/mooreandrew/test-app.git',
   environment => 'Integration',
   app_type    => 'python',
+  vars        => {
+    'TESTVALUE' => 'test',
+  }
+} ->
+wsgi::application { 'scheduled_file' :
+  source      => 'https://github.com/mooreandrew/gradle-test-jar.git',
+  environment => 'Integration',
+  app_type    => 'batch',
+  vars        => {
+    'TESTVALUE' => 'test',
+  }
+} ->
+wsgi::application { 'test_absent1' :
+  ensure      => absent,
+  app_type    => 'wsgi',
+} ->
+wsgi::application { 'test_absent2' :
+  ensure      => absent,
+  app_type    => 'batch',
 }
