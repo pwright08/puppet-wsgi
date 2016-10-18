@@ -17,4 +17,4 @@ APPLICATION_LOG='<%= @application_log %>'
 
 # Run time
 echo "Starting python service..."
-<%= @venv_dir %>/bin/python <%= @code_dir %>/run.py <%= @extra_args %> > >(tee -a ${APPLICATION_LOG}) 2> >(tee -a ${APPLICATION_LOG} >&2)
+<%= @venv_dir %>/bin/python <%= @code_dir %>/<%= @python_exe %> <%= @extra_args %> > >(tee -a ${APPLICATION_LOG}) 2> >(tee -a ${APPLICATION_LOG} >&2)

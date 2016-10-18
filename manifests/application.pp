@@ -24,6 +24,7 @@ define wsgi::application (
   $environment  = undef,
   $vs_app_host  = undef,
   $vs_app_token = undef,
+  $python_exe   = 'run.py',
   $extra_args   = undef
 ) {
 
