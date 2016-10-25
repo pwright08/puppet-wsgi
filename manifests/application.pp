@@ -115,7 +115,7 @@ define wsgi::application (
       ensure  => directory,
       owner   => $app_user,
       group   => $app_group,
-      mode    => '0775',
+      recurse => true,
       require => Class[wsgi]
     }
 
@@ -123,7 +123,7 @@ define wsgi::application (
       ensure  => directory,
       owner   => $app_user,
       group   => $app_group,
-      mode    => '0775',
+      recurse => true,
       require => File[$directory]
     }
 
