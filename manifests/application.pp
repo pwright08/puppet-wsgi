@@ -115,7 +115,7 @@ define wsgi::application (
       ensure  => directory,
       owner   => $app_user,
       group   => $app_group,
-      mode    => '0775'
+      mode    => '0775',
       require => Class[wsgi]
     }
 
