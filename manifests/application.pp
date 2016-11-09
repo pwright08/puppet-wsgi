@@ -115,7 +115,7 @@ define wsgi::application (
       ensure  => directory,
       owner   => $app_user,
       group   => $app_group,
-      recurse => true,
+      mode    => '0775',
       require => Class[wsgi]
     }
 
@@ -123,7 +123,7 @@ define wsgi::application (
       ensure  => directory,
       owner   => $app_user,
       group   => $app_group,
-      recurse => true,
+      mode    => '0775',
       require => File[$directory]
     }
 
@@ -275,7 +275,7 @@ define wsgi::application (
       notify  => $service_notify
     }
 
-    # only create the service if required
+    # Only create the service if required
     if ($run_as_service == True) {
       file { $sysd_file:
         ensure  => file,
@@ -320,6 +320,12 @@ define wsgi::application (
       group   => $app_group,
       mode    => '0644',
       content => template('wsgi/logrotate.erb')
+    }
+
+    exec { 'file-ownership' :
+      exec    => "chown -R ${app_user}:${app_group} ${directory}",
+      onlyif  => "[[ $(/usr/bin/find ${directory} ! -user ${app_user} | wc -l) != '0' ]]",
+      require => File[$directory]
     }
 
   # Remove application & configuration
