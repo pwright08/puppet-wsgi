@@ -289,6 +289,8 @@ define wsgi::application (
 
       file { $sysd_link:
         ensure    => link,
+        owner     => $app_user,
+        group     => $app_group,
         target    => $sysd_file,
         require   => File[$sysd_file],
         subscribe => Vcsrepo[$code_dir]
@@ -322,10 +324,17 @@ define wsgi::application (
       content => template('wsgi/logrotate.erb')
     }
 
-    exec { 'file-ownership' :
-      exec    => "chown -R ${app_user}:${app_group} ${directory}",
-      onlyif  => "[[ $(/usr/bin/find ${directory} ! -user ${app_user} | wc -l) != '0' ]]",
+    exec { "file-ownership-${name}" :
+      command => "/usr/bin/chown -R ${app_user}:${app_group} ${directory}",
+      onlyif  => "/usr/bin/test $(/usr/bin/find ${directory} ! -user ${app_user} | wc -l) != '0'",
       require => File[$directory]
+    }
+
+    exec { "systemd-reload-${name}" :
+      command     => '/usr/bin/systemctl daemon-reload',
+      refreshonly => true,
+      subscribe   => File[$sysd_file],
+      notify      => Service[$service]
     }
 
   # Remove application & configuration
