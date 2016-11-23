@@ -8,6 +8,7 @@ define wsgi::types::python(
   $dep_file = undef,
   $start_sh = undef,
   $bind     = undef,
+  $command  = undef
   ){
 
 
