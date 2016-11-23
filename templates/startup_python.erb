@@ -9,7 +9,8 @@ echo 'Loading environment variables...'
 source <%= @cfg_file  %>
 
 # Ensure python can find modules correctly
-PYTHONPATH='<%= @code_dir %>'
+export PYTHONPATH='<%= @code_dir %>'
+export PATH="<%= @venv_dir %>/bin:${PATH}"
 cd <%= @code_dir %>
 
 # Logging configuration
@@ -17,4 +18,8 @@ APPLICATION_LOG='<%= @application_log %>'
 
 # Run time
 echo "Starting python service..."
+<% if @command %>
+<%= @command %> > >(tee -a ${APPLICATION_LOG}) 2> >(tee -a ${APPLICATION_LOG} >&2)
+<% else %>
 <%= @venv_dir %>/bin/python <%= @code_dir %>/<%= @python_exe %> <%= @extra_args %> > >(tee -a ${APPLICATION_LOG}) 2> >(tee -a ${APPLICATION_LOG} >&2)
+<% end %>

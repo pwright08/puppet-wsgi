@@ -25,6 +25,7 @@ define wsgi::application (
   $vs_app_host  = undef,
   $vs_app_token = undef,
   $python_exe   = 'run.py',
+  $command      = undef,
   $extra_args   = undef
 ) {
 
@@ -243,6 +244,7 @@ define wsgi::application (
         dep_file => $dep_file,
         start_sh => $start_sh,
         bind     => $bind,
+        command  => $command
       }
 
     } elsif ($app_type == 'batch') {
