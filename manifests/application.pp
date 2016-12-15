@@ -128,7 +128,7 @@ define wsgi::application (
       require => File[$directory]
     }
 
-    file { [$access_log, $error_log]:
+    file { [$access_log, $error_log, $application_log]:
       ensure  => file,
       owner   => $app_user,
       group   => $app_group,
