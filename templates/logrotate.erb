@@ -1,7 +1,7 @@
 ## MANAGED BY PUPPET
 
 # Backup <%= @service %> log files
-<%= @logging_path %>/*.log {
+<%= @logs_dir %>/*.log {
   missingok
   notifempty
   dateext
