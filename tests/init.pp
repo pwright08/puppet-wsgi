@@ -16,6 +16,7 @@ wsgi::application { 'test-app' :
   source      => 'https://github.com/mooreandrew/test-app.git',
   environment => 'Integration',
   app_type    => 'wsgi',
+  logging     => true,
   vars        => {
     'TESTVALUE' => 'test',
     'SETTINGS'  => 'config.DevelopmentConfig'
@@ -30,6 +31,7 @@ wsgi::application { 'spark-app' :
   environment => 'Integration',
   app_type    => 'jar',
   jar_name    => 'gradle_test-1.0.jar',
+  logging     => true,
   vars        => {
     'TESTVALUE' => 'test',
   }
@@ -39,6 +41,7 @@ wsgi::application { 'test-python-app' :
   source      => 'https://github.com/mooreandrew/test-app.git',
   environment => 'Integration',
   app_type    => 'python',
+  logging     => true,
   vars        => {
     'TESTVALUE' => 'test',
   }
@@ -47,6 +50,7 @@ wsgi::application { 'scheduled_file' :
   source      => 'https://github.com/mooreandrew/gradle-test-jar.git',
   environment => 'Integration',
   app_type    => 'batch',
+  logging     => true,
   vars        => {
     'TESTVALUE' => 'test',
   }
