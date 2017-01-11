@@ -9,9 +9,7 @@
 #
 class wsgi () inherits wsgi::params {
 
-  package { ['java-1.8.0-openjdk', 'java-1.8.0-openjdk-devel'] :
-    ensure => present,
-  }
+  include wsgi::dependencies::java
 
   package { $::wsgi::params::python_pkg:
     ensure   => present,
