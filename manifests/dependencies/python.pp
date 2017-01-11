@@ -29,4 +29,8 @@ class wsgi::dependencies::python () {
   # As lr-python3 could exist on systems as we used it previously, we'll remove it
   package { 'lr-python3' : ensure => absent }
 
+  # As the IUS packages conflict with the EPEL ones, ensure EPEL packages are not installed.
+  $epel_packages = ["python${ver}", "python${ver}-pip", "python${ver}-setuptools"]
+  package { $epel_packages : ensure => absent }
+
 }
