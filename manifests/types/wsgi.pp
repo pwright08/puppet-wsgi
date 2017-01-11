@@ -26,7 +26,7 @@ define wsgi::types::wsgi(
     }
 
     exec { "${name} virtualenv":
-      command => "pyvenv3 ${venv_dir}",
+      command => "python3 -m venv ${venv_dir}",
       user    => $owner,
       group   => $group,
       creates => "${venv_dir}/bin/activate",
