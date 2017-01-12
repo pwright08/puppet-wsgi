@@ -18,9 +18,6 @@ class wsgi::params {
   case $::osfamily {
     'RedHat': {
 
-      $python_pkg     = 'lr-python3-3.4.3-1.x86_64'
-      $python_pkg_url = 'http://rpm.landregistryconcept.co.uk/landregistry/x86_64/lr-python3-3.4.3-1.x86_64.rpm'
-
       $systemd   = '/usr/lib/systemd/system'
       $logrotate = '/etc/logrotate.d'
 
