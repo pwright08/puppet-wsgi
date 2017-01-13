@@ -329,7 +329,7 @@ define wsgi::application (
     exec { "file-ownership-${name}" :
       command => "/usr/bin/chown -R ${app_user}:${app_group} ${directory}",
       onlyif  => "/usr/bin/test $(/usr/bin/find ${directory} ! -user ${app_user} | wc -l) != '0'",
-      require => File[$directory]
+      require => Vcsrepo[$code_dir]
     }
 
     exec { "systemd-reload-${name}" :
