@@ -3,16 +3,16 @@
 # This type is used to manage the installation.
 #
 define wsgi::application (
-  $ensure       = 'present',
-  $owner        = undef,
-  $group        = undef,
-  $wsgi_entry   = $wsgi::params::wsgi_entry,
-  $revision     = $wsgi::params::git_revision,
-  $directory    = "${wsgi::params::app_dir}/${name}",
-  $service      = "lr-${name}",
-  $manage       = true,
-  $logging      = false,
-  $workers      = $wsgi::params::workers,
+  $ensure              = 'present',
+  $owner               = undef,
+  $group               = undef,
+  $wsgi_entry          = $wsgi::params::wsgi_entry,
+  $revision            = $wsgi::params::git_revision,
+  $directory           = "${wsgi::params::app_dir}/${name}",
+  $service             = "lr-${name}",
+  $manage              = true,
+  $centralised_logging = false,
+  $workers             = $wsgi::params::workers,
   $threads      = $wsgi::params::threads,
   $bind         = undef,
   $vars         = undef,
@@ -237,7 +237,7 @@ define wsgi::application (
     # Logging configuration
     ############################################################################
 
-    if $logging {
+    if $centralised_logging {
       # Because Puppet doesn't manage entire directory trees (why?), we need to
       # create but not manage the parent directories.
       $filebeat_dirs = ['/etc/filebeat', '/etc/filebeat/filebeat.d']
@@ -251,6 +251,16 @@ define wsgi::application (
         mode    => '0644',
         content => template('wsgi/filebeat.erb')
       }
+
+      file { $logrotate_file :
+        ensure  => present,
+        owner   => $app_user,
+        group   => $app_group,
+        mode    => '0644',
+        content => template('wsgi/logrotate.erb')
+      }
+    } else {
+      file { $logrotate_file : ensure => absent }
     }
 
     # Configuration
@@ -316,13 +326,6 @@ define wsgi::application (
       }
     }
 
-    file { $logrotate_file :
-      ensure  => present,
-      owner   => $app_user,
-      group   => $app_group,
-      mode    => '0644',
-      content => template('wsgi/logrotate.erb')
-    }
 
     exec { "file-ownership-${name}" :
       command => "/usr/bin/chown -R ${app_user}:${app_group} ${directory}",
