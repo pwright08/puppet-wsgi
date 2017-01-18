@@ -37,11 +37,11 @@ define wsgi::types::wsgi(
     }
 
     file { "${name} python":
-      ensure => link,
-      path => "${venv_dir}/bin/python3.4",
-      target => '/usr/bin/python3.4',
-      owner => $owner,
-      group => $group,
+      ensure  => link,
+      path    => "${venv_dir}/bin/python3.4",
+      target  => '/usr/bin/python3.4',
+      owner   => $owner,
+      group   => $group,
       require => Exec["${name} virtualenv"]
     }
 

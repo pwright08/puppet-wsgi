@@ -20,7 +20,12 @@ class wsgi::dependencies::python () {
     source   => $ius_url
   }
 
-  $packages = ["python${ver}u", "python${ver}u-pip", "python${ver}u-setuptools"]
+  $packages = [
+    "python${ver}u",
+    "python${ver}u-devel",
+    "python${ver}u-pip",
+    "python${ver}u-setuptools"
+  ]
 
   # In order to avoid conflicts with other modules we simply want to ensure
   # that Python is installed. We do not need explicit 'ownership' of this resource
@@ -30,7 +35,12 @@ class wsgi::dependencies::python () {
   package { 'lr-python3' : ensure => absent }
 
   # As the IUS packages conflict with the EPEL ones, ensure EPEL packages are not installed.
-  $epel_packages = ["python${ver}", "python${ver}-pip", "python${ver}-setuptools"]
+  $epel_packages = [
+    "python${ver}",
+    "python${ver}-devel",
+    "python${ver}-pip",
+    "python${ver}-setuptools"
+  ]
   package { $epel_packages : ensure => absent }
 
 }
