@@ -31,17 +31,26 @@ define wsgi::types::python(
       user    => $owner,
       group   => $group,
       creates => "${venv_dir}/bin/activate",
-      path    => '/usr/local/bin:/usr/bin:/bin',
+      path    => '/usr/bin:/bin:/sbin',
       unless  => "grep '^[\\t ]*VIRTUAL_ENV=[\\\\'\\\"]*${venv_dir}[\\\"\\\\'][\\t ]*$' ${venv_dir}/bin/activate",
-      require => File[$venv_dir],
+      require => [File[$venv_dir], Class['wsgi::dependencies::python']],
       notify  => Exec["${name} dependencies"]
+    }
+
+    file { "${name} python":
+      ensure => link,
+      path => "${venv_dir}/bin/python3.4",
+      target => '/usr/bin/python3.4',
+      owner => $owner,
+      group => $group,
+      require => Exec["${name} virtualenv"]
     }
 
     exec { "${name} dependencies":
       command     => "${venv_dir}/bin/pip install -r ${code_dir}/requirements.txt",
       user        => $owner,
       group       => $group,
-      require     => [Exec["${name} virtualenv"], File["${name} requirements.txt"]],
+      require     => [File["${name} python"], File["${name} requirements.txt"]],
       subscribe   => Vcsrepo[$code_dir],
       refreshonly => true
     }
