@@ -255,8 +255,8 @@ define wsgi::application (
 
       file { $logrotate_file :
         ensure  => present,
-        owner   => root,
-        group   => root,
+        owner   => 'root',
+        group   => 'root',
         mode    => '0644',
         content => template('wsgi/logrotate.erb')
       }
