@@ -11,6 +11,7 @@ define wsgi::application (
   $directory           = "${wsgi::params::app_dir}/${name}",
   $service             = "lr-${name}",
   $manage              = true,
+  $logrotate_freq      = 'weekly',
   $logging             = false,
   $centralised_logging = $logging,
   $workers             = $wsgi::params::workers,
