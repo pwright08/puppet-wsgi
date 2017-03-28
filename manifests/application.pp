@@ -270,7 +270,7 @@ define wsgi::application (
       ensure  => file,
       owner   => $app_user,
       group   => $app_group,
-      mode    => '0664',
+      mode    => '0640',
       content => template('wsgi/environment.erb'),
       require => File[$directory],
       notify  => $service_notify
@@ -280,7 +280,7 @@ define wsgi::application (
       ensure  => file,
       owner   => $app_user,
       group   => $app_group,
-      mode    => '0664',
+      mode    => '0640',
       content => template('wsgi/deploy.erb'),
       require => File[$directory],
       notify  => $service_notify
