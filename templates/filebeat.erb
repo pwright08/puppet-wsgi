@@ -1,39 +1,20 @@
 # Filebeat configuration for <%= @name %> application.
 
-
 filebeat.prospectors:
-# Each - is a prospector. Most options can be set at the prospector level, so
-# you can use different prospectors for various configurations.
-# Below are the prospector specific configurations.
-
-# Type of the files. Based on this the way the file is read is decided.
-# The different types cannot be mixed in one prospector
-#
-# Possible options are:
-# * log: Reads every line of the log file (default)
-# * stdin: Reads the standard in
-
-#------------------------------ Log prospector --------------------------------
 - input_type: log
-
-  # Paths that should be crawled and fetched. Glob based paths.
-  # To fetch all ".log" files from a specific level of subdirectories
-  # /var/log/*/*.log can be used.
-  # For each file found under this path, a harvester is started.
-  # Make sure not file is defined twice as this can lead to unexpected behaviour.
   paths:
-  - <%= @application_log %>
-  - <%= @error_log %>
-
+    - <%= @access_log %>
   document_type: lr-application
   fields:
     application: '<%= @name %>'
     environment: '<%= @environment %>'
     version:     '<%= @revision %>'
 
+
 - input_type: log
   paths:
-    - <%= @access_log %>
+  - <%= @application_log %>
+  - <%= @error_log %>
   document_type: access
   fields:
     application: '<%= @name %>'
