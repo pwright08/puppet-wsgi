@@ -247,8 +247,8 @@ define wsgi::application (
 
       file { $filebeat_conf :
         ensure  => present,
-        owner   => $app_user,
-        group   => $app_group,
+        owner   => 'root',
+        group   => 'root',
         mode    => '0644',
         content => template('wsgi/filebeat.erb')
       }
