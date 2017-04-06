@@ -12,6 +12,7 @@ define wsgi::application (
   $service             = "lr-${name}",
   $manage              = true,
   $logrotate_freq      = 'weekly',
+  $logrotate_rotate    = 4,
   $logging             = false,
   $centralised_logging = $logging,
   $workers             = $wsgi::params::workers,

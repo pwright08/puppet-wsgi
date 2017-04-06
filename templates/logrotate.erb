@@ -6,7 +6,7 @@
   notifempty
   dateext
   su <%= @app_user %> <%= @app_group %>
-  rotate 4
+  rotate <%= @logrotate_rotate %>
   <%= @logrotate_freq %>
   compress
 }
