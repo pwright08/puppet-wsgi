@@ -246,6 +246,11 @@ define wsgi::application (
       $filebeat_dirs = ['/etc/filebeat', '/etc/filebeat/filebeat.d']
       $filebeat_conf = "/etc/filebeat/filebeat.d/${service}.yml"
       ensure_resource('file', $filebeat_dirs, { ensure => directory })
+      #
+      #  If not set correctly
+      if ! ($logrotate_freq in [ 'hourly', 'daily', 'weekly', 'monthly', 'yearly' ]) {
+        fail("Invalid value $logrotate_freq for \$logrotate_freq.")
+      }
 
       file { $filebeat_conf :
         ensure  => present,
