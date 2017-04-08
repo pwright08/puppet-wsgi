@@ -9,7 +9,9 @@ filebeat.prospectors:
     application: '<%= @name %>'
     environment: '<%= @environment %>'
     version:     '<%= @revision %>'
-
+    <%- if @log_fields %><%- @log_fields.each do |value| %>    <%=value%>: '<%= scope.lookupvar('::' + value) %>'
+    <%- end -%>
+    <%- end -%>
 
 - input_type: log
   paths:
@@ -20,3 +22,6 @@ filebeat.prospectors:
     application: '<%= @name %>'
     environment: '<%= @environment %>'
     version:     '<%= @revision %>'
+    <%- if @log_fields %><%- @log_fields.each do |value| %>    <%=value%>: '<%= scope.lookupvar('::' + value) %>'
+    <%- end -%>
+    <%- end -%>

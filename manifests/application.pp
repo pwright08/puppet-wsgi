@@ -27,7 +27,8 @@ define wsgi::application (
   $vs_app_token = undef,
   $python_exe   = 'run.py',
   $command      = undef,
-  $extra_args   = undef
+  $extra_args   = undef,
+  $log_fields   = hiera('filebeat_log_fields',[]),
 ) {
 
   include stdlib
