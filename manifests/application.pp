@@ -250,7 +250,7 @@ define wsgi::application (
       #
       #  If not set correctly
       if ! ($logrotate_freq in [ 'hourly', 'daily', 'weekly', 'monthly', 'yearly' ]) {
-        fail("Invalid value $logrotate_freq for \$logrotate_freq.")
+        fail("Invalid value ${logrotate_freq} for \$logrotate_freq.")
       }
 
       file { $filebeat_conf :
