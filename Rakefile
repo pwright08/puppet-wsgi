@@ -14,7 +14,7 @@ PuppetLint::RakeTask.new :lint do |config|
   config.fail_on_warnings = true
   config.ignore_paths = exclude_paths
   config.disable_checks = ['80chars', 'autoloader_layout', 'class_inherits_from_params_class', 'documentation']
-  config.log_format = "%{path}:%{linenumber}:%{check}:%{KIND}:%{message}"
+  config.log_format = "%{path}:%{line}:%{check}:%{KIND}:%{message}"
 end
 
 # Puppet syntax task (:syntax)
