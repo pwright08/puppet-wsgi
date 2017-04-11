@@ -9,7 +9,7 @@ filebeat.prospectors:
     application: '<%= @name %>'
     environment: '<%= @environment %>'
     version:     '<%= @revision %>'
-    <%- if @log_fields %><%- @log_fields.each do |value| %>    <%=value%>: '<%= scope.lookupvar('::' + value) %>'
+    <%- if @log_fields.size > 0 %><%- @log_fields.each do |value| %>    <%=value%>: '<%= scope.lookupvar('::' + value) %>'
     <%- end -%>
     <%- end -%>
 
@@ -22,6 +22,6 @@ filebeat.prospectors:
     application: '<%= @name %>'
     environment: '<%= @environment %>'
     version:     '<%= @revision %>'
-    <%- if @log_fields %><%- @log_fields.each do |value| %>    <%=value%>: '<%= scope.lookupvar('::' + value) %>'
+    <%- if @log_fields.size > 0 %><%- @log_fields.each do |value| %>    <%=value%>: '<%= scope.lookupvar('::' + value) %>'
     <%- end -%>
     <%- end -%>
