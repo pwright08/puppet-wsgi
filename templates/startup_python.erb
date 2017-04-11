@@ -4,14 +4,29 @@
 # Port the application should listen on
 export PORT=<%= @bind %>
 
-# Load environment variables
+# Load environment variables and immediatly override with any deployment varables
 echo 'Loading environment variables...'
 source <%= @cfg_file  %>
+source <%= @dep_file  %>
 
 # Ensure python can find modules correctly
 export PYTHONPATH='<%= @code_dir %>'
 export PATH="<%= @venv_dir %>/bin:${PATH}"
 cd <%= @code_dir %>
+
+<%- if @manage == true -%>
+# Run database migration if manage.py script exists
+if [ -f '<%= @code_dir %>/manage.py' ]; then
+  echo 'Running migration script...'
+  PYTHON='<%= @venv_dir %>/bin/python'
+  $PYTHON <%= @code_dir %>/manage.py db upgrade
+  # If the migration doesn't happen successfully, die
+  if [ $? != '0' ]; then
+    echo 'Migration script failed to run successfully'
+    exit 1
+  fi
+fi
+<%- end -%>
 
 # Logging configuration
 APPLICATION_LOG='<%= @application_log %>'
