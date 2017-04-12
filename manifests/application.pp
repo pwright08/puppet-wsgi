@@ -30,7 +30,7 @@ define wsgi::application (
   $python_exe   = 'run.py',
   $command      = undef,
   $extra_args   = undef,
-  $log_fields   = hiera('filebeat_log_fields',[]),
+  $log_fields   = [],
 ) {
 
   include stdlib

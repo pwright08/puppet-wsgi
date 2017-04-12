@@ -16,7 +16,6 @@ wsgi::application { 'test-app' :
   source      => 'https://github.com/mooreandrew/test-app.git',
   environment => 'Integration',
   app_type    => 'wsgi',
-  logging     => true,
   vars        => {
     'TESTVALUE' => 'test',
     'SETTINGS'  => 'config.DevelopmentConfig'
@@ -34,14 +33,18 @@ wsgi::application { 'spark-app' :
   logging     => true,
   vars        => {
     'TESTVALUE' => 'test',
-  }
+  },
+  centralised_logging => true,
+  log_fields  => [
+    'application_environment'
+  ],
 } ->
 wsgi::application { 'test-python-app' :
   bind        => '5003',
   source      => 'https://github.com/mooreandrew/test-app.git',
   environment => 'Integration',
   app_type    => 'python',
-  logging     => true,
+  centralised_logging => true,
   vars        => {
     'TESTVALUE' => 'test',
   }
@@ -51,6 +54,7 @@ wsgi::application { 'scheduled_file' :
   environment => 'Integration',
   app_type    => 'batch',
   logging     => true,
+  centralised_logging => true,
   vars        => {
     'TESTVALUE' => 'test',
   }
