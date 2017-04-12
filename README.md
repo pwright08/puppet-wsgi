@@ -121,13 +121,31 @@ Secondly, it is assumed that you wish to install your application under `/opt/la
 
 Coming soon...
 
-## Testing
+## Executing The Module
 
-Testing using vagrant:
+This will run the init.pp test in the tests folder.
+
+``` puppet
+vagrant up
+vagrant ssh
+sudo puppet apply /vagrant/tests/init.pp
+```
+
+## How to run tests
+
+Run these as a normal user (not root)
+
 ```
 vagrant up
 vagrant ssh
-sudo puppet apply /etc/puppet/modules/wsgi/tests/init.pp
+cd /vagrant
+sudo yum install -y ruby-devel
+sudo yum install -y libffi-devel
+sudo yum install -y gcc gcc-c++
+sudo yum install -y libxml2-devel
+gem install bundler
+bundle install
+rake validation
 ```
 
 ## Release Notes

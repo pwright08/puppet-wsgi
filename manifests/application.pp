@@ -29,7 +29,8 @@ define wsgi::application (
   $vs_app_token = undef,
   $python_exe   = 'run.py',
   $command      = undef,
-  $extra_args   = undef
+  $extra_args   = undef,
+  $log_fields   = [],
 ) {
 
   include stdlib
@@ -249,13 +250,13 @@ define wsgi::application (
       #
       #  If not set correctly
       if ! ($logrotate_freq in [ 'hourly', 'daily', 'weekly', 'monthly', 'yearly' ]) {
-        fail("Invalid value $logrotate_freq for \$logrotate_freq.")
+        fail("Invalid value ${logrotate_freq} for \$logrotate_freq.")
       }
 
       file { $filebeat_conf :
         ensure  => present,
-        owner   => $app_user,
-        group   => $app_group,
+        owner   => 'root',
+        group   => 'root',
         mode    => '0644',
         content => template('wsgi/filebeat.erb')
       }
