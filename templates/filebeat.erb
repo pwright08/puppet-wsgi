@@ -26,6 +26,10 @@ filebeat.prospectors:
 - input_type: log
   paths:
     - <%= @error_log %>
+  multiline:
+    pattern: '^\['
+    negate: true
+    match: after
   document_type: app_error_log
   fields:
     application: '<%= @name %>'
