@@ -4,7 +4,7 @@ filebeat.prospectors:
 - input_type: log
   paths:
     - <%= @access_log %>
-  document_type: lr-application
+  document_type: app_access_log
   fields:
     application: '<%= @name %>'
     environment: '<%= @environment %>'
@@ -12,12 +12,25 @@ filebeat.prospectors:
     <%- if @log_fields.size > 0 %><%- @log_fields.each do |value| %>    <%=value%>: '<%= scope.lookupvar('::' + value) %>'
     <%- end -%>
     <%- end -%>
-
 - input_type: log
   paths:
-  - <%= @application_log %>
-  - <%= @error_log %>
-  document_type: access
+    - <%= @application_log %>
+  document_type: app_application_log
+  fields:
+    application: '<%= @name %>'
+    environment: '<%= @environment %>'
+    version:     '<%= @revision %>'
+    <%- if @log_fields.size > 0 %><%- @log_fields.each do |value| %>    <%=value%>: '<%= scope.lookupvar('::' + value) %>'
+    <%- end -%>
+    <%- end -%>
+- input_type: log
+  paths:
+    - <%= @error_log %>
+  multiline:
+    pattern: '^\['
+    negate: true
+    match: after
+  document_type: app_error_log
   fields:
     application: '<%= @name %>'
     environment: '<%= @environment %>'
