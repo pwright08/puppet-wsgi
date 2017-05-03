@@ -124,11 +124,20 @@ define wsgi::application (
       require => Class[wsgi]
     }
 
-    file { [$venv_dir, $logs_dir, $code_dir]:
+    file { [$venv_dir, $code_dir]:
       ensure  => directory,
       owner   => $app_user,
       group   => $app_group,
       mode    => '0775',
+      require => File[$directory]
+    }
+
+    file { $logs_dir:
+      ensure  => directory,
+      owner   => $app_user,
+      group   => $app_group,
+      mode    => '0775',
+      seltype => 'var_log_t',
       require => File[$directory]
     }
 
@@ -137,6 +146,7 @@ define wsgi::application (
       owner   => $app_user,
       group   => $app_group,
       mode    => '0644',
+      seltype => 'var_log_t',
       require => File[$directory]
     }
 
