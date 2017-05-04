@@ -17,13 +17,14 @@ class wsgi::dependencies::java () {
   # Install FlywayDB Command Line Interface to manage Postgresql databases
   # that are owned by Java applications
   $flyway_db_version = '4.1.2'
+
   archive {"flyway_db_${flyway_db_version}":
     ensure     => present,
     url        => "https://repo1.maven.org/maven2/org/flywaydb/flyway-commandline/${flyway_db_version}/flyway-commandline-${flyway_db_version}.tar.gz",
     target     => '/opt',
-    root_dir   => '.',
+    root_dir   => "flyway-${flyway_db_version}",
     checksum   => false,
-    src_target => '/tmp'
+    src_target => '/tmp',
   }
 
   file {"/opt/flyway-${flyway_db_version}/flyway":
