@@ -7,10 +7,32 @@ export PORT=<%= @bind %>
 # Load environment variables
 echo 'Loading environment variables...'
 source <%= @cfg_file  %>
+source <%= @dep_file  %>
 
 # Ensure Java is configured correctly
 export JAVA_HOME=/usr/lib/jvm/java-1.8.0-openjdk/
 cd <%= @code_dir %>
+
+<%- if @manage == true -%>
+# Run database migration if migrations exist in the JAR
+echo 'Running migration script...'
+if [ `unzip -t <%= @jar_name  %> | grep "db/migration/.*sql" | wc -l` -gt 0 ]; then
+  echo 'Found database migrations.... processing...'
+  # Run FlywayDB Migrate against the database specified in the JDBC_PG_URL env var
+  flyway -user=$JDBC_PG_FLYWAY_USER -password=$JDBC_PG_PASSWORD -url=$JDBC_PG_URL \
+  -placeholders.APP_USER=$JDBC_PG_USER \
+  -jarDirs=<%= @code_dir %> -locations=classpath:/db/migration migrate
+  if [ $? != '0' ]; then
+    echo 'Migration script failed to run successfully'
+    exit 1
+  fi
+else
+  echo 'No database migrations found.'
+fi
+<%- end -%>
+
+echo 'Re-Loading standard environment variables...'
+source <%= @cfg_file  %>
 
 # Logging configuration
 ERROR_LOG='<%= @error_log %>'
