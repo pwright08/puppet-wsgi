@@ -11,6 +11,7 @@ define wsgi::application (
   $directory           = "${wsgi::params::app_dir}/${name}",
   $service             = "lr-${name}",
   $manage              = true,
+  $logrotation         = false,
   $logrotate_freq      = 'weekly',
   $logrotate_rotate    = 4,
   $logging             = false,
@@ -257,11 +258,6 @@ define wsgi::application (
       $filebeat_dirs = ['/etc/filebeat', '/etc/filebeat/filebeat.d']
       $filebeat_conf = "/etc/filebeat/filebeat.d/${service}.yml"
       ensure_resource('file', $filebeat_dirs, { ensure => directory })
-      #
-      #  If not set correctly
-      if ! ($logrotate_freq in [ 'hourly', 'daily', 'weekly', 'monthly', 'yearly' ]) {
-        fail("Invalid value ${logrotate_freq} for \$logrotate_freq.")
-      }
 
       file { $filebeat_conf :
         ensure  => present,
@@ -269,6 +265,14 @@ define wsgi::application (
         group   => 'root',
         mode    => '0644',
         content => template('wsgi/filebeat.erb')
+      }
+    }
+
+    if $logrotation {
+      #
+      #  If not set correctly
+      if ! ($logrotate_freq in [ 'hourly', 'daily', 'weekly', 'monthly', 'yearly' ]) {
+        fail("Invalid value ${logrotate_freq} for \$logrotate_freq.")
       }
 
       file { $logrotate_file :
