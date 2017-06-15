@@ -17,22 +17,22 @@ define wsgi::application (
   $logging             = false,
   $centralised_logging = $logging,
   $workers             = $wsgi::params::workers,
-  $threads       = $wsgi::params::threads,
-  $bind          = undef,
-  $vars          = undef,
-  $deploy_vars   = undef,
-  $source        = undef,
-  $jar_name      = undef,
-  $app_type      = 'wsgi',
-  $vs_server     = undef,
-  $environment   = undef,
-  $vs_app_host   = undef,
-  $vs_app_token  = undef,
-  $python_exe    = 'run.py',
-  $command       = undef,
-  $extra_args    = undef,
-  $static_script = undef,
-  $log_fields    = [],
+  $threads      = $wsgi::params::threads,
+  $bind         = undef,
+  $vars         = undef,
+  $deploy_vars  = undef,
+  $source       = undef,
+  $jar_name     = undef,
+  $app_type     = 'wsgi',
+  $vs_server    = undef,
+  $environment  = undef,
+  $vs_app_host  = undef,
+  $vs_app_token = undef,
+  $python_exe   = 'run.py',
+  $command      = undef,
+  $extra_args   = undef,
+  $no_service   = false,
+  $log_fields   = [],
 ) {
 
   include stdlib
@@ -80,7 +80,7 @@ define wsgi::application (
   }
 
   # check if the application needs to run as a service
-  if ! ($app_type in [ 'wsgi', 'jar', 'python' ]) or ! ($static_script == false) {
+  if ! ($app_type in [ 'wsgi', 'jar', 'python' ]) or ! ($no_service == false) {
     $run_as_service = False
     $service_notify = undef
   } else {
