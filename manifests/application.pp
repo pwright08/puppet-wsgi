@@ -80,7 +80,7 @@ define wsgi::application (
   }
 
   # check if the application needs to run as a service
-  if ! ($app_type in [ 'wsgi', 'jar', 'python' ]) or ($static_script == False) {
+  if ! ($app_type in [ 'wsgi', 'jar', 'python' ]) or ! ($static_script == false) {
     $run_as_service = False
     $service_notify = undef
   } else {
