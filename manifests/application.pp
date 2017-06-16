@@ -31,6 +31,7 @@ define wsgi::application (
   $python_exe   = 'run.py',
   $command      = undef,
   $extra_args   = undef,
+  $no_service   = false,
   $log_fields   = [],
 ) {
 
@@ -79,7 +80,7 @@ define wsgi::application (
   }
 
   # check if the application needs to run as a service
-  if ! ($app_type in [ 'wsgi', 'jar', 'python' ]) {
+  if ! ($app_type in [ 'wsgi', 'jar', 'python' ]) or ! ($no_service == false) {
     $run_as_service = False
     $service_notify = undef
   } else {
