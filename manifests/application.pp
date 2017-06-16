@@ -14,7 +14,7 @@ define wsgi::application (
   $logrotation         = false,
   $logrotate_freq      = 'weekly',
   $logrotate_rotate    = 4,
-  $logging             = false,
+  $logging             = true,
   $centralised_logging = $logging,
   $workers             = $wsgi::params::workers,
   $threads      = $wsgi::params::threads,
