@@ -252,12 +252,12 @@ define wsgi::application (
 
     # Logging configuration
     ############################################################################
+    $filebeat_dirs = ['/etc/filebeat', '/etc/filebeat/filebeat.d']
+    $filebeat_conf = "/etc/filebeat/filebeat.d/${service}.yml"
 
     if $centralised_logging {
       # Because Puppet doesn't manage entire directory trees (why?), we need to
       # create but not manage the parent directories.
-      $filebeat_dirs = ['/etc/filebeat', '/etc/filebeat/filebeat.d']
-      $filebeat_conf = "/etc/filebeat/filebeat.d/${service}.yml"
       ensure_resource('file', $filebeat_dirs, { ensure => directory })
 
       file { $filebeat_conf :
@@ -267,6 +267,8 @@ define wsgi::application (
         mode    => '0644',
         content => template('wsgi/filebeat.erb')
       }
+    } else {
+      file { $filebeat_conf : ensure => absent }
     }
 
     if $logrotation {
