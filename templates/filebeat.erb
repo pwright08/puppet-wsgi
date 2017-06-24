@@ -1,5 +1,6 @@
 # Filebeat configuration for <%= @name %> application.
 
+filebeat.prospectors:
 - input_type: log
   paths:
     - <%= @access_log %>
