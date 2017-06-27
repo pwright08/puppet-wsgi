@@ -33,6 +33,11 @@ define wsgi::application (
   $extra_args   = undef,
   $no_service   = false,
   $log_fields   = [],
+  $repo_type    = git,
+  $rpm_repo     = "${name}-repo",
+  $rpm_repo_url = undef,
+  $repo_key     = undef,
+  $rpm_package  = undef,
 ) {
 
   include stdlib
@@ -94,10 +99,18 @@ define wsgi::application (
 
     # Input validation
     ############################################################################
-    if $repo_address == undef {
-      fail( 'Source/repo_address parameter must be provided')
+    if $repo_type == 'git' {
+      if $repo_address == undef {
+        fail( 'Source/repo_address parameter must be provided')
+      }
+    } elsif $repo_type == 'rpm' {
+      if $rpm_repo_url == undef {
+        fail ( 'rpm_repo parameter must be provided')
+      }
+      if $rpm_package == undef {
+        fail ( 'rpm_package parameter must be provided')
+      }
     }
-
     # User account management
     ############################################################################
 
@@ -154,46 +167,82 @@ define wsgi::application (
 
     # Source code
     ############################################################################
-    vcsrepo { $code_dir:
-      ensure     => latest,
-      provider   => 'git',
-      source     => $repo_address,
-      revision   => $git_revision,
-      submodules => true,
-      require    => File[$directory],
-      notify     => [Exec[$commit_file], Exec[$version_file]]
-    }
-
-    exec { $commit_file:
-      command     => "git rev-parse --verify HEAD > ${commit_file}",
-      user        => $app_user,
-      group       => $app_group,
-      cwd         => $code_dir,
-      refreshonly => true,
-      path        => '/usr/local/bin:/usr/bin:/bin',
-      require     => Vcsrepo[$code_dir],
-      notify      => $service_notify
-    }
-
-    if $git_revision == undef {
-      exec { $version_file:
-        command     => "echo 'latest' > ${version_file}",
-        user        => $app_user,
-        group       => $app_group,
-        cwd         => $code_dir,
-        refreshonly => true,
-        path        => '/usr/local/bin:/usr/bin:/bin',
-        require     => Vcsrepo[$code_dir]
+    if $repo_type == 'git' {
+      vcsrepo { $code_dir:
+        ensure     => latest,
+        provider   => 'git',
+        source     => $repo_address,
+        revision   => $git_revision,
+        submodules => true,
+        require    => File[$directory],
+        notify     => [Exec[$commit_file], Exec[$version_file]]
       }
-    } else {
-      exec { $version_file:
-        command     => "echo ${revision} > ${version_file}",
+
+      exec { $commit_file:
+        command     => "git rev-parse --verify HEAD > ${commit_file}",
         user        => $app_user,
         group       => $app_group,
         cwd         => $code_dir,
         refreshonly => true,
         path        => '/usr/local/bin:/usr/bin:/bin',
-        require     => Vcsrepo[$code_dir]
+        require     => Vcsrepo[$code_dir],
+        notify      => $service_notify
+      }
+
+      if $git_revision == undef {
+        exec { $version_file:
+          command     => "echo 'latest' > ${version_file}",
+          user        => $app_user,
+          group       => $app_group,
+          cwd         => $code_dir,
+          refreshonly => true,
+          path        => '/usr/local/bin:/usr/bin:/bin',
+          require     => Vcsrepo[$code_dir]
+        }
+      } else {
+        exec { $version_file:
+          command     => "echo ${revision} > ${version_file}",
+          user        => $app_user,
+          group       => $app_group,
+          cwd         => $code_dir,
+          refreshonly => true,
+          path        => '/usr/local/bin:/usr/bin:/bin',
+          require     => Vcsrepo[$code_dir]
+        }
+      }
+    } elsif $repo_type == 'rpm' {
+
+      # ensure version file is absent file
+      file { $version_file :
+        ensure => absent
+      }
+
+      # ensure commit file is absent file
+      file { $commit_file :
+        ensure => absent
+      }
+
+      # Activate gpgcheck if gpg key is defined
+      if $repo_key {
+        $gpgcheck = '1'
+      } else {
+        $gpgcheck = '0'
+      }
+
+      # Configure repo containing application package
+      yumrepo { $rpm_repo:
+        baseurl    => $rpm_repo_url,
+        descr      => 'Local repository',
+        enabled    => '1',
+        gpgcheck   => $gpgcheck,
+        gpgkey     => $repo_key,
+        mirrorlist => absent,
+      }
+
+      # Install application package
+      package { $rpm_package :
+        ensure  => latest,
+        require => Yumrepo[$rpm_repo]
       }
     }
 
@@ -224,7 +273,7 @@ define wsgi::application (
         dep_file => $dep_file,
         start_sh => $start_sh,
         jar_name => $jar_name,
-        bind     => $bind
+        bind     => $bind,
       }
 
     } elsif ($app_type == 'python') {
@@ -321,13 +370,18 @@ define wsgi::application (
         notify  => Service[$service]
       }
 
+      if $repo_type == 'git' {
+        $subscribe = "Vcsrepo[${code_dir}]"
+      } elsif $repo_type == 'rpm' {
+        $subscribe = "Package[${rpm_package}]"
+      }
       file { $sysd_link:
         ensure    => link,
         owner     => $app_user,
-        group     => $app_group,
         target    => $sysd_file,
+        group     => $app_group,
         require   => File[$sysd_file],
-        subscribe => Vcsrepo[$code_dir]
+        subscribe => $subscribe
       }
 
       service { $service:
@@ -354,7 +408,7 @@ define wsgi::application (
     exec { "file-ownership-${name}" :
       command => "/usr/bin/chown -R ${app_user}:${app_group} ${directory}",
       onlyif  => "/usr/bin/test $(/usr/bin/find ${directory} ! -user ${app_user} | wc -l) != '0'",
-      require => Vcsrepo[$code_dir]
+      require => $subscribe
     }
 
     exec { "systemd-reload-${name}" :
