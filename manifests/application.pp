@@ -105,7 +105,7 @@ define wsgi::application (
       }
     } elsif $repo_type == 'rpm' {
       if $rpm_repo_url == undef {
-        fail ( 'rpm_repo parameter must be provided')
+        fail ( 'rpm_repo_url parameter must be provided')
       }
       if $rpm_package == undef {
         fail ( 'rpm_package parameter must be provided')
@@ -212,14 +212,22 @@ define wsgi::application (
       }
     } elsif $repo_type == 'rpm' {
 
-      # ensure version file is absent file
       file { $version_file :
-        ensure => absent
+        ensure  => file,
+        content => 'rpm',
+        owner   => $app_user,
+        group   => $app_group,
+        mode    => '0644',
+        require => File[$directory]
       }
 
-      # ensure commit file is absent file
       file { $commit_file :
-        ensure => absent
+        ensure  => file,
+        content => 'rpm',
+        owner   => $app_user,
+        group   => $app_group,
+        mode    => '0644',
+        require => File[$directory]
       }
 
       # Activate gpgcheck if gpg key is defined
@@ -230,7 +238,7 @@ define wsgi::application (
       }
 
       # Configure repo containing application package
-      yumrepo { $rpm_repo:
+      yumrepo { "${name}-repo" :
         baseurl    => $rpm_repo_url,
         descr      => 'Local repository',
         enabled    => '1',
