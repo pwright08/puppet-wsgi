@@ -11,6 +11,7 @@
     <%- if @log_fields.size > 0 %><%- @log_fields.each do |value| %>    <%=value%>: '<%= scope.lookupvar('::' + value) %>'
     <%- end -%>
     <%- end -%>
+  tail_files: true
 - input_type: log
   paths:
     - <%= @application_log %>
@@ -22,6 +23,7 @@
     <%- if @log_fields.size > 0 %><%- @log_fields.each do |value| %>    <%=value%>: '<%= scope.lookupvar('::' + value) %>'
     <%- end -%>
     <%- end -%>
+  tail_files: true
 - input_type: log
   paths:
     - <%= @error_log %>
@@ -37,3 +39,4 @@
     <%- if @log_fields.size > 0 %><%- @log_fields.each do |value| %>    <%=value%>: '<%= scope.lookupvar('::' + value) %>'
     <%- end -%>
     <%- end -%>
+  tail_files: true
