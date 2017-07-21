@@ -15,7 +15,7 @@ define wsgi::application (
   $logrotate_freq      = 'weekly',
   $logrotate_rotate    = 4,
   $logging             = true,
-  $centralised_logging = true,
+  $centralised_logging = $logging,
   $workers             = $wsgi::params::workers,
   $threads      = $wsgi::params::threads,
   $bind         = undef,
@@ -33,6 +33,9 @@ define wsgi::application (
   $extra_args   = undef,
   $no_service   = false,
   $log_fields   = [],
+  $repo_type    = git,
+  $rpm_repo     = "${name}-repo",
+  $rpm_package  = undef,
 ) {
 
   include stdlib
@@ -94,10 +97,15 @@ define wsgi::application (
 
     # Input validation
     ############################################################################
-    if $repo_address == undef {
-      fail( 'Source/repo_address parameter must be provided')
+    if $repo_type == 'git' {
+      if $repo_address == undef {
+        fail( 'Source/repo_address parameter must be provided')
+      }
+    } elsif $repo_type == 'yum' {
+      if $rpm_package == undef {
+        fail ( 'rpm_package parameter must be provided')
+      }
     }
-
     # User account management
     ############################################################################
 
@@ -154,46 +162,72 @@ define wsgi::application (
 
     # Source code
     ############################################################################
-    vcsrepo { $code_dir:
-      ensure     => latest,
-      provider   => 'git',
-      source     => $repo_address,
-      revision   => $git_revision,
-      submodules => true,
-      require    => File[$directory],
-      notify     => [Exec[$commit_file], Exec[$version_file]]
-    }
-
-    exec { $commit_file:
-      command     => "git rev-parse --verify HEAD > ${commit_file}",
-      user        => $app_user,
-      group       => $app_group,
-      cwd         => $code_dir,
-      refreshonly => true,
-      path        => '/usr/local/bin:/usr/bin:/bin',
-      require     => Vcsrepo[$code_dir],
-      notify      => $service_notify
-    }
-
-    if $git_revision == undef {
-      exec { $version_file:
-        command     => "echo 'latest' > ${version_file}",
-        user        => $app_user,
-        group       => $app_group,
-        cwd         => $code_dir,
-        refreshonly => true,
-        path        => '/usr/local/bin:/usr/bin:/bin',
-        require     => Vcsrepo[$code_dir]
+    if $repo_type == 'git' {
+      vcsrepo { $code_dir:
+        ensure     => latest,
+        provider   => 'git',
+        source     => $repo_address,
+        revision   => $git_revision,
+        submodules => true,
+        require    => File[$directory],
+        notify     => [Exec[$commit_file], Exec[$version_file]]
       }
-    } else {
-      exec { $version_file:
-        command     => "echo ${revision} > ${version_file}",
+
+      exec { $commit_file:
+        command     => "git rev-parse --verify HEAD > ${commit_file}",
         user        => $app_user,
         group       => $app_group,
         cwd         => $code_dir,
         refreshonly => true,
         path        => '/usr/local/bin:/usr/bin:/bin',
-        require     => Vcsrepo[$code_dir]
+        require     => Vcsrepo[$code_dir],
+        notify      => $service_notify
+      }
+
+      if $git_revision == undef {
+        exec { $version_file:
+          command     => "echo 'latest' > ${version_file}",
+          user        => $app_user,
+          group       => $app_group,
+          cwd         => $code_dir,
+          refreshonly => true,
+          path        => '/usr/local/bin:/usr/bin:/bin',
+          require     => Vcsrepo[$code_dir]
+        }
+      } else {
+        exec { $version_file:
+          command     => "echo ${revision} > ${version_file}",
+          user        => $app_user,
+          group       => $app_group,
+          cwd         => $code_dir,
+          refreshonly => true,
+          path        => '/usr/local/bin:/usr/bin:/bin',
+          require     => Vcsrepo[$code_dir]
+        }
+      }
+    } elsif $repo_type == 'yum' {
+
+      file { $version_file :
+        ensure  => file,
+        content => 'rpm',
+        owner   => $app_user,
+        group   => $app_group,
+        mode    => '0644',
+        require => File[$directory]
+      }
+
+      file { $commit_file :
+        ensure  => file,
+        content => 'rpm',
+        owner   => $app_user,
+        group   => $app_group,
+        mode    => '0644',
+        require => File[$directory]
+      }
+
+      # Install application package
+      package { $rpm_package :
+        ensure  => latest,
       }
     }
 
@@ -224,7 +258,7 @@ define wsgi::application (
         dep_file => $dep_file,
         start_sh => $start_sh,
         jar_name => $jar_name,
-        bind     => $bind
+        bind     => $bind,
       }
 
     } elsif ($app_type == 'python') {
@@ -252,12 +286,12 @@ define wsgi::application (
 
     # Logging configuration
     ############################################################################
-    $filebeat_dirs = ['/etc/filebeat', '/etc/filebeat/filebeat.d']
-    $filebeat_conf = "/etc/filebeat/filebeat.d/${service}.yml"
 
     if $centralised_logging {
       # Because Puppet doesn't manage entire directory trees (why?), we need to
       # create but not manage the parent directories.
+      $filebeat_dirs = ['/etc/filebeat', '/etc/filebeat/filebeat.d']
+      $filebeat_conf = "/etc/filebeat/filebeat.d/${service}.yml"
       ensure_resource('file', $filebeat_dirs, { ensure => directory })
 
       file { $filebeat_conf :
@@ -267,8 +301,6 @@ define wsgi::application (
         mode    => '0644',
         content => template('wsgi/filebeat.erb')
       }
-    } else {
-      file { $filebeat_conf : ensure => absent }
     }
 
     if $logrotation {
@@ -323,13 +355,18 @@ define wsgi::application (
         notify  => Service[$service]
       }
 
+      if $repo_type == 'git' {
+        $subscribe = "Vcsrepo[${code_dir}]"
+      } elsif $repo_type == 'yum' {
+        $subscribe = "Package[${rpm_package}]"
+      }
       file { $sysd_link:
         ensure    => link,
         owner     => $app_user,
-        group     => $app_group,
         target    => $sysd_file,
+        group     => $app_group,
         require   => File[$sysd_file],
-        subscribe => Vcsrepo[$code_dir]
+        subscribe => $subscribe
       }
 
       service { $service:
@@ -356,7 +393,7 @@ define wsgi::application (
     exec { "file-ownership-${name}" :
       command => "/usr/bin/chown -R ${app_user}:${app_group} ${directory}",
       onlyif  => "/usr/bin/test $(/usr/bin/find ${directory} ! -user ${app_user} | wc -l) != '0'",
-      require => Vcsrepo[$code_dir]
+      require => $subscribe
     }
 
     exec { "systemd-reload-${name}" :

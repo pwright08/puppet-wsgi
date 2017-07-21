@@ -15,6 +15,7 @@ define wsgi::types::wsgi(
       fail( 'Bind value must be set to an integer representing a network port')
     }
 
+  if ($repo_type == 'git') {
     # Virtual environment
     ############################################################################
     file { "${name} requirements.txt":
@@ -62,7 +63,7 @@ define wsgi::types::wsgi(
       require => Exec["${name} dependencies"],
       before  => Service[$service],
     }
-
+  }
     # Specific Configuration
     ############################################################################
 
