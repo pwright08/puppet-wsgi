@@ -1,14 +1,15 @@
 
 define wsgi::types::wsgi(
-  $code_dir = undef,
-  $venv_dir = undef,
-  $owner    = undef,
-  $group    = undef,
-  $service  = undef,
-  $cfg_file = undef,
-  $dep_file = undef,
-  $start_sh = undef,
-  $bind     = undef,
+  $code_dir  = undef,
+  $venv_dir  = undef,
+  $owner     = undef,
+  $group     = undef,
+  $service   = undef,
+  $cfg_file  = undef,
+  $dep_file  = undef,
+  $start_sh  = undef,
+  $bind      = undef,
+  $repo_type = undef,
   ){
 
     if $bind == undef {
