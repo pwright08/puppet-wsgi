@@ -228,6 +228,7 @@ define wsgi::application (
       # Install application package
       package { $rpm_package :
         ensure  => latest,
+        notify  => $service_notify
       }
     }
 
