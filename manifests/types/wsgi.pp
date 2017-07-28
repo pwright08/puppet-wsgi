@@ -1,20 +1,22 @@
 
 define wsgi::types::wsgi(
-  $code_dir = undef,
-  $venv_dir = undef,
-  $owner    = undef,
-  $group    = undef,
-  $service  = undef,
-  $cfg_file = undef,
-  $dep_file = undef,
-  $start_sh = undef,
-  $bind     = undef,
+  $code_dir  = undef,
+  $venv_dir  = undef,
+  $owner     = undef,
+  $group     = undef,
+  $service   = undef,
+  $cfg_file  = undef,
+  $dep_file  = undef,
+  $start_sh  = undef,
+  $bind      = undef,
+  $repo_type = undef,
   ){
 
     if $bind == undef {
       fail( 'Bind value must be set to an integer representing a network port')
     }
 
+  if ($repo_type == 'git') {
     # Virtual environment
     ############################################################################
     file { "${name} requirements.txt":
@@ -62,7 +64,7 @@ define wsgi::types::wsgi(
       require => Exec["${name} dependencies"],
       before  => Service[$service],
     }
-
+  }
     # Specific Configuration
     ############################################################################
 
