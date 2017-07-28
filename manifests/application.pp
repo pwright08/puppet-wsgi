@@ -286,6 +286,8 @@ define wsgi::application (
 
     # Logging configuration
     ############################################################################
+    $filebeat_dirs = ['/etc/filebeat', '/etc/filebeat/filebeat.d']
+    $filebeat_conf = "/etc/filebeat/filebeat.d/${service}.yml"
 
     if $centralised_logging {
       # Because Puppet doesn't manage entire directory trees (why?), we need to
