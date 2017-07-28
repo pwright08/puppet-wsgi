@@ -33,6 +33,7 @@ define wsgi::application (
   $extra_args   = undef,
   $no_service   = false,
   $log_fields   = [],
+  $healthcheck  = false
 ) {
 
   include stdlib
