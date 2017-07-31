@@ -8,8 +8,6 @@ define wsgi::application (
   $group               = undef,
   $wsgi_entry          = $wsgi::params::wsgi_entry,
   $revision            = $wsgi::params::git_revision,
-  $directory           = "${wsgi::params::app_dir}/${name}",
-  $service             = "lr-${name}",
   $manage              = true,
   $logrotation         = false,
   $logrotate_freq      = 'weekly',
@@ -35,13 +33,40 @@ define wsgi::application (
   $log_fields   = [],
   $repo_type    = 'git',
   $rpm_repo     = "${name}-repo",
-  $rpm_package  = undef,
+  $rpm_package  = $name,
 ) {
 
   include stdlib
 
   # Static variables
   ##############################################################################
+
+  # Put this in to compensate for some apps having different names to their source repo
+
+  if $rpm_package == undef { 
+    $directory = "${wsgi::params::app_dir}/${name}"
+    $service   = "lr-${name}"
+  }  else { 
+    $directory = "${wsgi::params::app_dir}/${rpm_package}"
+    $service   = "lr-${rpm_package}"
+
+    if $rpm_package != $name { 
+
+      file { "${wsgi::params::app_dir}/${name}":
+        ensure  => absent,
+        purge   => true,
+        force   => true,
+      }
+
+      service { "lr-${name}":
+        ensure     => stopped,
+        enable     => false,
+        hasrestart => false,
+        hasstatus  => false,
+      }
+    }
+  }
+
   $venv_dir        = "${directory}/virtualenv"
   $code_dir        = "${directory}/source"
   $logs_dir        = "${directory}/logs"
