@@ -33,7 +33,7 @@ define wsgi::application (
   $extra_args   = undef,
   $no_service   = false,
   $log_fields   = [],
-  $repo_type    = git,
+  $repo_type    = 'git',
   $rpm_repo     = "${name}-repo",
   $rpm_package  = undef,
 ) {
@@ -237,15 +237,16 @@ define wsgi::application (
     if ($app_type == 'wsgi') {
 
       wsgi::types::wsgi { $name:
-        code_dir => $code_dir,
-        venv_dir => $venv_dir,
-        owner    => $app_user,
-        group    => $app_group,
-        service  => $service,
-        cfg_file => $cfg_file,
-        dep_file => $dep_file,
-        start_sh => $start_sh,
-        bind     => $bind
+        code_dir  => $code_dir,
+        venv_dir  => $venv_dir,
+        owner     => $app_user,
+        group     => $app_group,
+        service   => $service,
+        cfg_file  => $cfg_file,
+        dep_file  => $dep_file,
+        start_sh  => $start_sh,
+        bind      => $bind,
+        repo_type => $repo_type
       }
 
     } elsif ($app_type == 'jar') {
@@ -259,7 +260,7 @@ define wsgi::application (
         dep_file => $dep_file,
         start_sh => $start_sh,
         jar_name => $jar_name,
-        bind     => $bind,
+        bind     => $bind
       }
 
     } elsif ($app_type == 'python') {
