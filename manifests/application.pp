@@ -53,9 +53,9 @@ define wsgi::application (
     if $rpm_package != $name { 
 
       file { "${wsgi::params::app_dir}/${name}":
-        ensure  => absent,
-        purge   => true,
-        force   => true,
+        ensure => absent,
+        purge  => true,
+        force  => true,
       }
 
       service { "lr-${name}":
