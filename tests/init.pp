@@ -24,6 +24,22 @@ wsgi::application { 'test-app' :
     'TESTVALUE' => 'deploy'
   }
 } ->
+wsgi::application { 'rpmtest-app' :
+  bind        => '5004',
+  wsgi_entry  => 'application.server:app',
+  repo_type   => 'yum',
+  rpm_package => 'rpmtest-app',
+  rpm_repo    => 'testrepo',
+  environment => 'Integration',
+  app_type    => 'wsgi',
+  vars        => {
+    'TESTVALUE' => 'test',
+    'SETTINGS'  => 'config.DevelopmentConfig'
+  },
+  deploy_vars => {
+    'TESTVALUE' => 'deploy'
+  }
+} ->
 wsgi::application { 'spark-app' :
   bind        => '5001',
   source      => 'https://github.com/mooreandrew/gradle-test-jar.git',
