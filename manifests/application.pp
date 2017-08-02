@@ -209,24 +209,6 @@ define wsgi::application (
       }
     } elsif $repo_type == 'yum' {
 
-      file { $version_file :
-        ensure  => file,
-        content => 'rpm',
-        owner   => $app_user,
-        group   => $app_group,
-        mode    => '0644',
-        require => File[$directory]
-      }
-
-      file { $commit_file :
-        ensure  => file,
-        content => 'rpm',
-        owner   => $app_user,
-        group   => $app_group,
-        mode    => '0644',
-        require => File[$directory]
-      }
-
       # Install application package
       package { $rpm_package :
         ensure => latest,
