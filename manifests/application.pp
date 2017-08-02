@@ -36,7 +36,7 @@ define wsgi::application (
   $healthcheck  = false,
   $repo_type    = 'git',
   $rpm_repo     = "${name}-repo",
-  $rpm_package  = $name,
+  $rpm_package  = undef,
 ) {
 
   include stdlib
@@ -49,6 +49,7 @@ define wsgi::application (
   if $rpm_package == undef { 
     $app_directory = $directory
     $app_service   = $service
+    $rpm_package   = $name
   }  else { 
     $app_directory = "${wsgi::params::app_dir}/${rpm_package}"
     $app_service   = "lr-${rpm_package}"
