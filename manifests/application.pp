@@ -46,15 +46,15 @@ define wsgi::application (
 
   # Put this in to compensate for some apps having different names to their source repo
 
-  if $rpm_package == undef { 
+  if $rpm_package == undef {
     $app_directory = $directory
     $app_service   = $service
     $rpm_package   = $name
-  }  else { 
+  }  else {
     $app_directory = "${wsgi::params::app_dir}/${rpm_package}"
     $app_service   = "lr-${rpm_package}"
 
-    if $rpm_package != $name { 
+    if $rpm_package != $name {
 
       file { $directory:
         ensure  => absent,
