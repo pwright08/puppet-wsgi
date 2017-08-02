@@ -57,9 +57,9 @@ define wsgi::application (
     if $rpm_package != $name {
 
       file { $directory:
-        ensure  => absent,
-        purge   => true,
-        force   => true,
+        ensure => absent,
+        purge  => true,
+        force  => true,
       }
 
       service { $service:
