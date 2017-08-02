@@ -8,10 +8,10 @@ define wsgi::application (
   $group               = undef,
   $wsgi_entry          = $wsgi::params::wsgi_entry,
   $revision            = $wsgi::params::git_revision,
-  $directory           = "${wsgi::params::app_dir}/${name}",
-  $service             = "lr-${name}",
   $manage              = true,
   $logrotation         = false,
+  $directory           = "${wsgi::params::app_dir}/${name}",
+  $service             = "lr-${name}",
   $logrotate_freq      = 'weekly',
   $logrotate_rotate    = 4,
   $logging             = true,
@@ -44,18 +44,46 @@ define wsgi::application (
 
   # Static variables
   ##############################################################################
-  $venv_dir        = "${directory}/virtualenv"
-  $code_dir        = "${directory}/source"
-  $logs_dir        = "${directory}/logs"
-  $pid_file        = "${directory}/${service}.pid"
-  $cfg_file        = "${directory}/settings.conf"
-  $dep_file        = "${directory}/deploy.conf"
-  $start_sh        = "${directory}/startup.sh"
-  $sysd_link       = "${directory}/${service}.service"
-  $sysd_file       = "${wsgi::params::systemd}/${service}.service"
-  $logrotate_file  = "${wsgi::params::logrotate}/${service}.conf"
-  $commit_file     = "${directory}/COMMIT"
-  $version_file    = "${directory}/VERSION"
+
+  # Put this in to compensate for some apps having different names to their source repo
+
+  if $rpm_package == undef {
+    $app_directory = $directory
+    $app_service   = $service
+    $rpm_package   = $name
+  }  else {
+    $app_directory = "${wsgi::params::app_dir}/${rpm_package}"
+    $app_service   = "lr-${rpm_package}"
+
+    if $rpm_package != $name {
+
+      file { $directory:
+        ensure => absent,
+        purge  => true,
+        force  => true,
+      }
+
+      service { $service:
+        ensure     => stopped,
+        enable     => false,
+        hasrestart => false,
+        hasstatus  => false,
+      }
+    }
+  }
+
+  $venv_dir        = "${app_directory}/virtualenv"
+  $code_dir        = "${app_directory}/source"
+  $logs_dir        = "${app_directory}/logs"
+  $pid_file        = "${app_directory}/${app_service}.pid"
+  $cfg_file        = "${app_directory}/settings.conf"
+  $dep_file        = "${app_directory}/deploy.conf"
+  $start_sh        = "${app_directory}/startup.sh"
+  $sysd_link       = "${app_directory}/${app_service}.service"
+  $sysd_file       = "${wsgi::params::systemd}/${app_service}.service"
+  $logrotate_file  = "${wsgi::params::logrotate}/${app_service}.conf"
+  $commit_file     = "${app_directory}/COMMIT"
+  $version_file    = "${app_directory}/VERSION"
   $access_log      = "${logs_dir}/access.log"
   $error_log       = "${logs_dir}/error.log"
   $application_log = "${logs_dir}/application.log"
@@ -63,8 +91,8 @@ define wsgi::application (
 
   # If a user/group is not specified we should assume the user should have it's
   # own account for which we'll use the same name as the service itself.
-  if $owner { $app_user  = $owner } else { $app_user  = $service }
-  if $group { $app_group = $group } else { $app_group = $service }
+  if $owner { $app_user  = $owner } else { $app_user  = $app_service }
+  if $group { $app_group = $group } else { $app_group = $app_service }
 
   if $vs_server != undef and $environment != undef and $vs_app_host != undef {
 
@@ -90,7 +118,7 @@ define wsgi::application (
     $service_notify = undef
   } else {
     $run_as_service = True
-    $service_notify = Service[$service]
+    $service_notify = Service[$app_service]
   }
 
   # Install and configure application environment
@@ -115,7 +143,7 @@ define wsgi::application (
       user { $app_user :
         ensure  => present,
         system  => true,
-        home    => $directory,
+        home    => $app_directory,
         comment => "LR service account for ${name}"
       }
     }
@@ -128,7 +156,7 @@ define wsgi::application (
 
     # Directory structure
     ############################################################################
-    file { $directory:
+    file { $app_directory:
       ensure  => directory,
       owner   => $app_user,
       group   => $app_group,
@@ -141,7 +169,7 @@ define wsgi::application (
       owner   => $app_user,
       group   => $app_group,
       mode    => '0775',
-      require => File[$directory]
+      require => File[$app_directory]
     }
 
     file { $logs_dir:
@@ -150,7 +178,7 @@ define wsgi::application (
       group   => $app_group,
       mode    => '0775',
       seltype => 'var_log_t',
-      require => File[$directory]
+      require => File[$app_directory]
     }
 
     file { [$access_log, $error_log, $application_log]:
@@ -159,7 +187,7 @@ define wsgi::application (
       group   => $app_group,
       mode    => '0644',
       seltype => 'var_log_t',
-      require => File[$directory]
+      require => File[$app_directory]
     }
 
     # Source code
@@ -171,7 +199,7 @@ define wsgi::application (
         source     => $repo_address,
         revision   => $git_revision,
         submodules => true,
-        require    => File[$directory],
+        require    => File[$app_directory],
         notify     => [Exec[$commit_file], Exec[$version_file]]
       }
 
@@ -225,7 +253,7 @@ define wsgi::application (
         venv_dir  => $venv_dir,
         owner     => $app_user,
         group     => $app_group,
-        service   => $service,
+        service   => $app_service,
         cfg_file  => $cfg_file,
         dep_file  => $dep_file,
         start_sh  => $start_sh,
@@ -239,7 +267,7 @@ define wsgi::application (
         code_dir => $code_dir,
         owner    => $app_user,
         group    => $app_group,
-        service  => $service,
+        service  => $app_service,
         cfg_file => $cfg_file,
         dep_file => $dep_file,
         start_sh => $start_sh,
@@ -254,7 +282,7 @@ define wsgi::application (
         venv_dir => $venv_dir,
         owner    => $app_user,
         group    => $app_group,
-        service  => $service,
+        service  => $app_service,
         cfg_file => $cfg_file,
         dep_file => $dep_file,
         start_sh => $start_sh,
@@ -273,7 +301,7 @@ define wsgi::application (
     # Logging configuration
     ############################################################################
     $filebeat_dirs = ['/etc/filebeat', '/etc/filebeat/filebeat.d']
-    $filebeat_conf = "/etc/filebeat/filebeat.d/${service}.yml"
+    $filebeat_conf = "/etc/filebeat/filebeat.d/${app_service}.yml"
 
     if $centralised_logging {
       # Because Puppet doesn't manage entire directory trees (why?), we need to
@@ -316,7 +344,7 @@ define wsgi::application (
       group   => $app_group,
       mode    => '0640',
       content => template('wsgi/environment.erb'),
-      require => File[$directory],
+      require => File[$app_directory],
       notify  => $service_notify
     }
 
@@ -326,7 +354,7 @@ define wsgi::application (
       group   => $app_group,
       mode    => '0640',
       content => template('wsgi/deploy.erb'),
-      require => File[$directory],
+      require => File[$app_directory],
       notify  => $service_notify
     }
 
@@ -339,7 +367,7 @@ define wsgi::application (
         mode    => '0664',
         content => template('wsgi/service.erb'),
         require => [File[$start_sh], File[$logs_dir]],
-        notify  => Service[$service]
+        notify  => Service[$app_service]
       }
 
       if $repo_type == 'git' {
@@ -356,7 +384,7 @@ define wsgi::application (
         subscribe => $subscribe
       }
 
-      service { $service:
+      service { $app_service:
         ensure     => running,
         enable     => true,
         hasrestart => true,
@@ -370,7 +398,7 @@ define wsgi::application (
       file { $sysd_link:
         ensure => absent,
       }
-      service { $service:
+      service { $app_service:
         ensure => stopped,
         enable => false
       }
@@ -378,8 +406,8 @@ define wsgi::application (
 
 
     exec { "file-ownership-${name}" :
-      command => "/usr/bin/chown -R ${app_user}:${app_group} ${directory}",
-      onlyif  => "/usr/bin/test $(/usr/bin/find ${directory} ! -user ${app_user} | wc -l) != '0'",
+      command => "/usr/bin/chown -R ${app_user}:${app_group} ${app_directory}",
+      onlyif  => "/usr/bin/test $(/usr/bin/find ${app_directory} ! -user ${app_user} | wc -l) != '0'",
       require => $subscribe
     }
 
@@ -387,7 +415,7 @@ define wsgi::application (
       command     => '/usr/bin/systemctl daemon-reload',
       refreshonly => true,
       subscribe   => File[$sysd_file],
-      notify      => Service[$service]
+      notify      => Service[$app_service]
     }
 
   # Remove application & configuration
@@ -399,14 +427,14 @@ define wsgi::application (
     if $app_user != $owner  { user { $app_user : ensure => absent }}
     if $app_group != $group { group { $app_group : ensure => absent }}
 
-    file { $directory:
+    file { $app_directory:
       ensure  => absent,
       force   => true,
       purge   => true,
       recurse => true,
     }
 
-    service { $service:
+    service { $app_service:
       ensure => stopped,
       enable => false
     }
