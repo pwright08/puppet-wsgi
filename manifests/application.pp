@@ -33,9 +33,11 @@ define wsgi::application (
   $extra_args   = undef,
   $no_service   = false,
   $log_fields   = [],
+  $healthcheck  = false,
   $repo_type    = 'git',
   $rpm_repo     = "${name}-repo",
   $rpm_package  = undef,
+
 ) {
 
   include stdlib
