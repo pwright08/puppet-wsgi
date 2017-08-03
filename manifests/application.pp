@@ -9,8 +9,6 @@ define wsgi::application (
   $wsgi_entry          = $wsgi::params::wsgi_entry,
   $revision            = $wsgi::params::git_revision,
   $local_revision      = false,
-  $directory           = "${wsgi::params::app_dir}/${name}",
-  $service             = "lr-${name}",
   $manage              = true,
   $logrotation         = false,
   $directory           = "${wsgi::params::app_dir}/${name}",
