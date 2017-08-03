@@ -71,6 +71,8 @@ define wsgi::application (
         hasrestart => false,
         hasstatus  => false,
       }
+    } else {
+      $rpm_package_name = $name
     }
   }
 
