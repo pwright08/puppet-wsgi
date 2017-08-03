@@ -48,14 +48,16 @@ define wsgi::application (
   # Put this in to compensate for some apps having different names to their source repo
 
   if $rpm_package == undef {
-    $app_directory = $directory
-    $app_service   = $service
-    $rpm_package   = $name
+    $app_directory    = $directory
+    $app_service      = $service
+    $rpm_package_name = $name
   }  else {
     $app_directory = "${wsgi::params::app_dir}/${rpm_package}"
     $app_service   = "lr-${rpm_package}"
 
     if $rpm_package != $name {
+
+      $rpm_package_name = $rpm_package
 
       file { $directory:
         ensure => absent,
@@ -130,10 +132,6 @@ define wsgi::application (
     if $repo_type == 'git' {
       if $repo_address == undef {
         fail( 'Source/repo_address parameter must be provided')
-      }
-    } elsif $repo_type == 'yum' {
-      if $rpm_package == undef {
-        fail ( 'rpm_package parameter must be provided')
       }
     }
     # User account management
@@ -238,7 +236,7 @@ define wsgi::application (
     } elsif $repo_type == 'yum' {
 
       # Install application package
-      package { $rpm_package :
+      package { $rpm_package_name :
         ensure => latest,
         notify => $service_notify
       }
@@ -373,7 +371,7 @@ define wsgi::application (
       if $repo_type == 'git' {
         $subscribe = "Vcsrepo[${code_dir}]"
       } elsif $repo_type == 'yum' {
-        $subscribe = "Package[${rpm_package}]"
+        $subscribe = "Package[${rpm_package_name}]"
       }
       file { $sysd_link:
         ensure    => link,
