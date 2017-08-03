@@ -8,6 +8,7 @@ define wsgi::application (
   $group               = undef,
   $wsgi_entry          = $wsgi::params::wsgi_entry,
   $revision            = $wsgi::params::git_revision,
+  $local_revision      = false,
   $directory           = "${wsgi::params::app_dir}/${name}",
   $service             = "lr-${name}",
   $manage              = true,
@@ -71,17 +72,21 @@ define wsgi::application (
     # Connect to version store to get repoistory, app version and variables
     $vs_json = getvars("${vs_app_host}/api/${environment}/${name}", $vs_app_token)
 
-    $git_revision = $vs_json['version']
     $app_vars     = $vs_json['variables']
     $dep_vars     = $vs_json['variables_deployment']
     $repo_address = $vs_json['repository']
     $local_config = False
   } else {
-    $git_revision = $revision
     $app_vars     = $vars
     $dep_vars     = $deploy_vars
     $repo_address = $source
     $local_config = True
+  }
+
+  if $vs_server and !$local_revision {
+    $git_revision = $vs_json['version']
+  }else{
+    $git_revision = $revision
   }
 
   # check if the application needs to run as a service
