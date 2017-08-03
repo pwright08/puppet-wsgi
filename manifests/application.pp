@@ -58,7 +58,7 @@ define wsgi::application (
     if $rpm_package != $name {
 
       $rpm_package_name = $rpm_package
-      
+
       file { $directory:
         ensure => absent,
         purge  => true,
