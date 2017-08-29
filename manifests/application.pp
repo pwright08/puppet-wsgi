@@ -278,16 +278,17 @@ define wsgi::application (
     } elsif ($app_type == 'python') {
 
       wsgi::types::python { $name:
-        code_dir => $code_dir,
-        venv_dir => $venv_dir,
-        owner    => $app_user,
-        group    => $app_group,
-        service  => $app_service,
-        cfg_file => $cfg_file,
-        dep_file => $dep_file,
-        start_sh => $start_sh,
-        bind     => $bind,
-        command  => $command
+        code_dir  => $code_dir,
+        venv_dir  => $venv_dir,
+        owner     => $app_user,
+        group     => $app_group,
+        service   => $app_service,
+        cfg_file  => $cfg_file,
+        dep_file  => $dep_file,
+        start_sh  => $start_sh,
+        bind      => $bind,
+        command   => $command,
+        repo_type => $repo_type
       }
 
     } elsif ($app_type == 'batch') {
