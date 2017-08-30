@@ -43,8 +43,8 @@ class wsgi::dependencies::java (
   }
 
   file {"/opt/flyway-${flyway_db_version}/flyway":
-    ensure  => present,
-    mode    => '0755',
+    ensure => present,
+    mode   => '0755',
   }
 
   file {'/usr/bin/flyway':
