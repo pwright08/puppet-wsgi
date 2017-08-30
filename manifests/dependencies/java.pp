@@ -2,7 +2,10 @@
 #
 # Ensures Java is installed
 #
-class wsgi::dependencies::java () {
+class wsgi::dependencies::java (
+  $flyway_db_source_url = undef,
+  $flyway_db_version    = '4.1.2',
+  ) {
 
   include stdlib
 
@@ -16,21 +19,32 @@ class wsgi::dependencies::java () {
 
   # Install FlywayDB Command Line Interface to manage Postgresql databases
   # that are owned by Java applications
-  $flyway_db_version = '4.1.2'
 
-  archive {"flyway_db_${flyway_db_version}":
-    ensure     => present,
-    url        => "https://repo1.maven.org/maven2/org/flywaydb/flyway-commandline/${flyway_db_version}/flyway-commandline-${flyway_db_version}.tar.gz",
-    target     => '/opt',
-    root_dir   => "flyway-${flyway_db_version}",
-    checksum   => false,
-    src_target => '/tmp',
+  if $flyway_db_source_url {
+    archive {"flyway_db_${flyway_db_version}":
+      ensure     => present,
+      url        => "${flyway_db_source_url}/flyway-commandline-${flyway_db_version}.tar.gz",
+      target     => '/opt',
+      root_dir   => "flyway-${flyway_db_version}",
+      checksum   => false,
+      src_target => '/tmp',
+      before     => File["/opt/flyway-${flyway_db_version}/flyway"],
+    }
+  } else {
+    archive {"flyway_db_${flyway_db_version}":
+      ensure     => present,
+      url        => "https://repo1.maven.org/maven2/org/flywaydb/flyway-commandline/${flyway_db_version}/flyway-commandline-${flyway_db_version}.tar.gz",
+      target     => '/opt',
+      root_dir   => "flyway-${flyway_db_version}",
+      checksum   => false,
+      src_target => '/tmp',
+      before     => File["/opt/flyway-${flyway_db_version}/flyway"],
+    }
   }
 
   file {"/opt/flyway-${flyway_db_version}/flyway":
     ensure  => present,
     mode    => '0755',
-    require => Archive["flyway_db_${flyway_db_version}"]
   }
 
   file {'/usr/bin/flyway':
