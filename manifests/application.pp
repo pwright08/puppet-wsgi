@@ -104,6 +104,7 @@ define wsgi::application (
     $vs_json = getvars("${vs_app_host}/api/${environment}/${name}", $vs_app_token)
 
     $git_revision = $vs_json['version']
+    #$git_revision = $vs_json['version']
     $app_vars     = $vs_json['variables']
     $dep_vars     = $vs_json['variables_deployment']
     $repo_address = $vs_json['repository']
@@ -237,9 +238,17 @@ define wsgi::application (
       }
     } elsif $repo_type == 'yum' {
 
+    if ( $git_revision == 'Develop' )
+    or ( $git_revision == 'Preview' )
+    or ( $git_revision == 'Demo' ) {
+      $rpm_version = 'Latest'
+    } else {
+      $rpm_version = $git_revision
+    }
+
       # Install application package
       package { $rpm_package_name :
-        ensure => latest,
+        ensure => $rpm_package,
         notify => $service_notify
       }
     }
