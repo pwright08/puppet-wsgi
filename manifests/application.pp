@@ -246,7 +246,7 @@ define wsgi::application (
 
       # Install application package
       package { $rpm_package_name :
-        ensure => $rpm_package,
+        ensure => $rpm_version,
         notify => $service_notify
       }
     }
