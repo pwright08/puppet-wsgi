@@ -37,7 +37,6 @@ define wsgi::application (
   $repo_type    = 'git',
   $rpm_repo     = "${name}-repo",
   $rpm_package  = undef,
-  #$git_revision = undef,
 ) {
 
   include stdlib
