@@ -37,7 +37,7 @@ define wsgi::application (
   $repo_type    = 'git',
   $rpm_repo     = "${name}-repo",
   $rpm_package  = undef,
-
+  #$git_revision = undef,
 ) {
 
   include stdlib
@@ -104,7 +104,6 @@ define wsgi::application (
     $vs_json = getvars("${vs_app_host}/api/${environment}/${name}", $vs_app_token)
 
     $git_revision = $vs_json['version']
-    #$git_revision = $vs_json['version']
     $app_vars     = $vs_json['variables']
     $dep_vars     = $vs_json['variables_deployment']
     $repo_address = $vs_json['repository']
