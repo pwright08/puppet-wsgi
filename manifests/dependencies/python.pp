@@ -2,7 +2,9 @@
 #
 # Ensures Python is installed
 #
-class wsgi::dependencies::python () {
+class wsgi::dependencies::python (
+  $ius_repo = true
+) {
 
   include stdlib
 
@@ -14,10 +16,12 @@ class wsgi::dependencies::python () {
   $ius_url  = 'https://centos7.iuscommunity.org/ius-release.rpm'
   $ius_name = 'ius-release'
 
-  package { $ius_name :
-    ensure   => present,
-    provider => rpm,
-    source   => $ius_url
+  if $ius_repo {
+    package { $ius_name :
+      ensure   => present,
+      provider => rpm,
+      source   => $ius_url
+    }
   }
 
   $packages = [
