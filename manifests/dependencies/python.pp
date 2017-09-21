@@ -16,14 +16,6 @@ class wsgi::dependencies::python (
   $ius_url  = 'https://centos7.iuscommunity.org/ius-release.rpm'
   $ius_name = 'ius-release'
 
-  if $ius_repo {
-    package { $ius_name :
-      ensure   => present,
-      provider => rpm,
-      source   => $ius_url
-    }
-  }
-
   $packages = [
     "python${ver}u",
     "python${ver}u-devel",
@@ -31,9 +23,19 @@ class wsgi::dependencies::python (
     "python${ver}u-setuptools"
   ]
 
-  # In order to avoid conflicts with other modules we simply want to ensure
-  # that Python is installed. We do not need explicit 'ownership' of this resource
-  ensure_packages($packages, { ensure => 'present', require => Package[$ius_name]})
+  if $ius_repo {
+    package { $ius_name :
+      ensure   => present,
+      provider => rpm,
+      source   => $ius_url
+    }
+
+    # In order to avoid conflicts with other modules we simply want to ensure
+    # that Python is installed. We do not need explicit 'ownership' of this resource
+    ensure_packages($packages, { ensure => 'present', require => Package[$ius_name]})
+  }else{
+    ensure_packages($packages, { ensure => 'present' })
+  }
 
   # As lr-python3 could exist on systems as we used it previously, we'll remove it
   package { 'lr-python3' : ensure => absent }
