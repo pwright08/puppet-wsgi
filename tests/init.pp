@@ -65,6 +65,16 @@ wsgi::application { 'test-python-app' :
     'TESTVALUE' => 'test',
   }
 } ->
+wsgi::application { 'test-python-no-service-app':
+  bind        => '5005',
+  source      => 'https://github.com/mooreandrew/test-app.git',
+  environment => 'Integration',
+  app_type    => 'python_no_service',
+  no_service  => true,
+  vars        => {
+    'TESTVALUE' => 'test'
+  }
+} ->
 wsgi::application { 'scheduled_file' :
   source      => 'https://github.com/mooreandrew/gradle-test-jar.git',
   environment => 'Integration',

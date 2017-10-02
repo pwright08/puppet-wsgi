@@ -275,7 +275,7 @@ define wsgi::application (
         bind     => $bind
       }
 
-    } elsif ($app_type == 'python') {
+    } elsif ($app_type in ['python', 'python_no_service']) {
 
       wsgi::types::python { $name:
         code_dir  => $code_dir,
